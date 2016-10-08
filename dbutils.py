@@ -29,7 +29,8 @@ def init_master():
             id integer unique,
             title text,
             begin integer,
-            end integer
+            end integer,
+            last_update integer
         );
         create table if not exists follows (
             ind integer unique,

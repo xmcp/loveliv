@@ -62,12 +62,11 @@ def _fetchall():
         init_db(eventid)
         with sqlite3.connect('events.db') as db:
             db.execute(
-                'replace into events (id, title, begin, end) values (?,?,?,?)',
+                'replace into events (id, title, begin, end, last_update) values (?,?,?,?,null)',
                 [eventid, evt_info['title'], int(evt_info['begin'].timestamp()), int(evt_info['end'].timestamp())]
             )
 
     with sqlite3.connect('db/%d.db'%eventid) as db:
-        print(' -> writing line data...')
         db.execute('insert into line (time, t1pre, t1cur, t2pre, t2cur, t3pre, t3cur) values (?,?,?,?,?,?,?)', [
             int(datetime.datetime.now().timestamp()),
             predict['2300']['predict'], predict['2300']['current'],
@@ -77,11 +76,12 @@ def _fetchall():
         for ind,uid,name in follows:
             print(' == fetching score of #%d %s at place %d'%(uid,name,ind))
             details=_fetch_user_rank(uid,eventid)
-            print(' -> writing score data...')
             db.execute(
                 'insert into follow%d (time,level,score,rank) values (?,?,?,?)'%ind,
                 [int(datetime.datetime.now().timestamp()), details['level'], details['score'], details['rank']]
             )
+
+    return eventid
 
 def mainloop():
     print('=== busybot started')
@@ -96,10 +96,15 @@ def mainloop():
         print('=== ticked at %s'%datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
         try:
-            _fetchall()
+            eventid=_fetchall()
         except Exception as e:
             print('!!! %s %s'%(type(e),e))
         else:
-            print('=== update completed')
+            with sqlite3.connect('events.db') as db:
+                db.execute(
+                    'update events set last_update=? where id=?',
+                    [int(datetime.datetime.now().timestamp()), eventid]
+                )
+            print(' == update completed')
 
 mainloop()
