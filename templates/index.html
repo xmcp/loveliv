@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}活动列表 - LoveLiv{% endblock %}
+{% block content %}
+    <div content="page-header"><h1>
+        LoveLiv <small>SIF国服活动追踪器</small>
+    </h1></div>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>时间</th>
+                <th>最新爬取</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for eventid,title,begin,end,last_update in g.events %}
+                <tr>
+                    <td><a href="/{{ eventid | urlencode }}">#{{ eventid }} {{ title }}</a></td>
+                    <td>
+                        {{ timestamp(begin) }} ~ {{ timestamp(end) }}
+                    </td>
+                    <td>{{ timestamp(last_update) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
