@@ -1,0 +1,33 @@
+{% extends "event_base.html" %}
+{% block content %}
+    {{ super() }}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th rowspan="2">时间</th>
+                <th colspan="3">#2300</th>
+                <th colspan="3">#11500</th>
+                <th colspan="3">#23000</th>
+            </tr>
+            <tr>
+                {% for _ in range(3) %}
+                    <th>实际</th>
+                    <th>线性</th>
+                    <th>预测</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur in lines[::5] %}
+                <tr>
+                    <td>{{ time | strftime }}</td>
+                    {% for pre,cur in [(t1pre,t1cur),(t2pre,t2cur),(t3pre,t3cur)] %}
+                        <td>{{ cur }}</td>
+                        <td>{{ (pre*(time-g.begin)/(g.end-g.begin)) | int }}</td>
+                        <td>{{ pre }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

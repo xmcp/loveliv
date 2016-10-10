@@ -1,13 +1,13 @@
 <!doctype html>
 {% macro timestamp(x) %}
-    <abbr class="js-timeago" title="{{ x | parsetime }}">{{ x | strftime }}</abbr>
+    <time class="js-timeago" datetime="{{ x | parsetime }}">{{ x | strftime }}</time>
 {% endmacro %}
 
 <html lang="zh">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}{% endblock %} - LoveLiv</title>
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
     <script src="/static/bootstrap/js/jquery.min.js"></script>
     <script src="/static/jquery.timeago.js"></script>
@@ -16,12 +16,27 @@
       <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <style>
+        * {
+            font-family: 'Helvetica Neue', Helvetica, Arial, '微软雅黑', 'Microsoft YaHei', sans-serif;
+        }
+        time.js-timeago {
+            font-family: 'Consolas', 'Courier', '微软雅黑', 'Microsoft YaHei', monospace;
+            text-decoration: underline;
+        }
+        time.js-timeago::before {
+            content: attr(title) ' (';
+        }
+        time.js-timeago::after {
+            content: ')';
+        }
+    </style>
 </head>
 <body>
     <div class="container">{% block content %}{% endblock %}</div>
     <script>
         $(function() {
-            $('abbr.js-timeago').timeago();
+            $('time.js-timeago').timeago();
         });
     </script>
 </body>
