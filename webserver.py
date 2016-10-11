@@ -5,7 +5,7 @@ import sqlite3
 import datetime
 
 app=Flask(__name__)
-app.debug=True
+#app.debug=True
 
 ## internal function
 
@@ -34,11 +34,11 @@ def getevent(eventid):
 ## template helper
 
 @app.template_filter('parsetime')
-def parse_timestamp(x):
+def parse_timestamp_iso(x):
     return to_datetime(x).isoformat()
 
 @app.template_filter('strftime')
-def parse_timestamp(x):
+def parse_timestamp_str(x):
     return to_datetime(x).strftime('%m-%d %H:%M')
 
 ## controller
@@ -72,7 +72,7 @@ def event_index(eventid):
             scores.append({
                 'score': int(pre*(g.time-g.begin)/(g.end-g.begin)),
                 'name': '%d 档'%name,
-                'desc': '实际 %d / 预测 %d'%(cur,pre),
+                'desc': '拟合 / 实际 %d / 预测 %d'%(cur,pre),
             })
 
     return render_template('event_index.html',scores=scores)
@@ -82,6 +82,26 @@ def event_predict(eventid):
     getevent(eventid)
     return render_template('event_predict.html')
 
+@app.route('/<int:eventid>/follow<int:ind>')
+def event_follow(eventid,ind):
+    db=getevent(eventid)
+    with sqlite3.connect('events.db') as db_master:
+        cur=db_master.cursor()
+        cur.execute('select id,name from follows where ind=?',[ind])
+        res=cur.fetchone()
+        assert res, '没有找到该关注者'
+        g.fid, g.fname=res
+    with db:
+        cur=db.cursor()
+        cur.execute('select time,level,score,rank from follow%d order by time desc limit 0,1'%ind)
+        res=cur.fetchone()
+        assert res, '没有该玩家的记录'
+        g.ftime, g.flevel, g.fscore, g.frank=res
+
+    return render_template('event_follow.html')
+
+## api
+
 @app.route('/<int:eventid>/api_predict.json')
 def api_predict(eventid):
     db=getevent(eventid)
@@ -89,11 +109,18 @@ def api_predict(eventid):
         cur=db.cursor()
         cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line')
         lines=cur.fetchall()
-    times=[x[0] for x in lines]
-    l1=[x[6] for x in lines] # fixme
+    times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in lines]
     return jsonify(
         times=times,
-        l1=l1,
+        l1c=[x[2] for x in lines],
+        l2c=[x[4] for x in lines],
+        l3c=[x[6] for x in lines],
+        l1p=[x[1] for x in lines],
+        l2p=[x[3] for x in lines],
+        l3p=[x[5] for x in lines],
+        l1r=[x[1]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
+        l2r=[x[3]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
+        l3r=[x[5]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
     )
 
 app.run(port=int(os.environ.get('LOVELIV_PORT',80)))

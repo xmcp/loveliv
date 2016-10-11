@@ -2,37 +2,75 @@
 {% block content %}
     {{ super() }}
     <style>
-        #predict-chart {
+        .chart {
             width: 100%;
-            height: 400px;
+            height: 500px;
         }
     </style>
 
-    <div id="predict-chart"></div>
+    <div id="line-chart" class="chart"></div>
+    <br>
+    <div id="predict-chart" class="chart"></div>
+
     <script>
-        var predict_chart=echarts.init(document.getElementById('predict-chart'));
+        var line_chart=echarts.init(document.getElementById('line-chart')),
+            predict_chart=echarts.init(document.getElementById('predict-chart'));
+        line_chart.showLoading();
+        predict_chart.showLoading();
+
         $.get('api_predict.json').done(function(data) {
-            predict_chart.setOption({
+            line_chart.hideLoading();
+            line_chart.setOption({
                 title: {
                     text: '档线变化'
                 },
                 tooltip: {},
                 legend: {
-                    data : ['2300']
+                    data : ['一档·实际','二档·实际','三档·实际','一档·拟合','二档·拟合','三档·拟合']
                 },
                 xAxis: {
                     type: 'category',
                     data: data['times']
                 },
-                yAxis: {
-                    //type: 'value'
+                yAxis: {},
+                dataZoom: [{
+                    type: 'slider',
+                    start: 0,
+                    end: 100
+                }],
+                series: [
+                    {name: '一档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l1c']},
+                    {name: '二档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l2c']},
+                    {name: '三档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l3c']},
+                    {name: '一档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l1r']},
+                    {name: '二档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l2r']},
+                    {name: '三档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l3r']}
+                ]
+            });
+            predict_chart.hideLoading();
+            predict_chart.setOption({
+                title: {
+                    text: '预测线变化'
                 },
-                series: {
-                    name: '2300',
-                    type: 'line',
-                    smooth: true,
-                    data: data['l1']
-                }
+                tooltip: {},
+                legend: {
+                    data : ['一档','二档','三档']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: data['times']
+                },
+                yAxis: {},
+                dataZoom: [{
+                    type: 'slider',
+                    start: 0,
+                    end: 100
+                }],
+                series: [
+                    {name: '一档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l1p']},
+                    {name: '二档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l2p']},
+                    {name: '三档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l3p']}
+                ]
             });
         });
     </script>
@@ -48,7 +86,7 @@
             <tr>
                 {% for _ in range(3) %}
                     <th>实际</th>
-                    <th>线性</th>
+                    <th>拟合</th>
                     <th>预测</th>
                 {% endfor %}
             </tr>

@@ -3,7 +3,7 @@
     {{ super() }}
     <style>
     span.event-score {
-        min-width: 5em;
+        min-width: 6em;
         display: inline-block;
         text-align: right;
         padding-right: .5em;
@@ -24,7 +24,7 @@
         {% for item in scores|sort(attribute='score',reverse=True) %}
             <li class="list-group-item">
                 <h3 class="list-group-item-heading">
-                    <span class="event-score">{{ item.score }}</span>
+                    <span class="event-score">{{ item.score }} pt</span>
                     {{ item.name }}
                     {% if item.desc %}
                         <small>({{ item.desc }})</small>
