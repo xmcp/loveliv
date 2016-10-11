@@ -79,11 +79,21 @@ def event_index(eventid):
 
 @app.route('/<int:eventid>/predict')
 def event_predict(eventid):
+    getevent(eventid)
+    return render_template('event_predict.html')
+
+@app.route('/<int:eventid>/api_predict.json')
+def api_predict(eventid):
     db=getevent(eventid)
     with db:
         cur=db.cursor()
-        cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line order by time desc')
+        cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line')
         lines=cur.fetchall()
-    return render_template('event_predict.html',lines=lines)
+    times=[x[0] for x in lines]
+    l1=[x[6] for x in lines] # fixme
+    return jsonify(
+        times=times,
+        l1=l1,
+    )
 
 app.run(port=int(os.environ.get('LOVELIV_PORT',80)))

@@ -1,7 +1,43 @@
 {% extends "event_base.html" %}
 {% block content %}
     {{ super() }}
-    <table class="table table-hover">
+    <style>
+        #predict-chart {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+
+    <div id="predict-chart"></div>
+    <script>
+        var predict_chart=echarts.init(document.getElementById('predict-chart'));
+        $.get('api_predict.json').done(function(data) {
+            predict_chart.setOption({
+                title: {
+                    text: '档线变化'
+                },
+                tooltip: {},
+                legend: {
+                    data : ['2300']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: data['times']
+                },
+                yAxis: {
+                    //type: 'value'
+                },
+                series: {
+                    name: '2300',
+                    type: 'line',
+                    smooth: true,
+                    data: data['l1']
+                }
+            });
+        });
+    </script>
+
+    {# <table class="table table-hover">
         <thead>
             <tr>
                 <th rowspan="2">时间</th>
@@ -29,5 +65,5 @@
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
+    </table> #}
 {% endblock %}
