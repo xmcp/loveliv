@@ -123,4 +123,4 @@ def api_predict(eventid):
         l3r=[x[5]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
     )
 
-app.run(port=int(os.environ.get('LOVELIV_PORT',80)))
+app.run(host='0.0.0.0',port=int(os.environ.get('LOVELIV_PORT',80)))
