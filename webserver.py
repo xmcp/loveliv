@@ -151,4 +151,18 @@ def api_predict(eventid):
         l3r=[x[5]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
     )
 
+@app.route('/<int:eventid>/follow<int:ind>/api_score.json')
+def api_follower_score(eventid,ind):
+    db=getevent(eventid)
+    with db:
+        cur=db.cursor()
+        cur.execute('select time,score from follow1')
+        scores=cur.fetchall()
+    times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in scores]
+    return jsonify(
+        times=times,
+        real=[x[1] for x in scores],
+        predict=[x[1]/(x[0]-g.begin)*(g.end-g.begin) for x in scores],
+    )
+
 app.run(host='0.0.0.0',port=int(os.environ.get('LOVELIV_PORT',80)))

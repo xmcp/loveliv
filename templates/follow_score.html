@@ -22,19 +22,22 @@
         $.when(
             $.get('{{ url_for('api_predict',eventid=g.eventid) }}'),
             $.get('{{ url_for('api_follower_score',eventid=g.eventid,ind=g.follower_ind) }}')
-        ).done(function(data,_todo) {
+        ).done(function(line_res,score_res) {
+            var line_data=line_res[0], score_data=score_res[0];
             line_chart.hideLoading();
             line_chart.setOption({
                 title: {
                     text: '实际分数'
                 },
-                tooltip: {},
+                tooltip: {
+                    trigger: 'axis'
+                },
                 legend: {
                     data : ['一档·实际','二档·实际','三档·实际','一档·拟合','二档·拟合','三档·拟合',USERNAME]
                 },
                 xAxis: {
                     type: 'category',
-                    data: data['times']
+                    data: line_data['times']
                 },
                 yAxis: {},
                 dataZoom: [{
@@ -42,27 +45,34 @@
                     start: 0,
                     end: 100
                 }],
-                series: [
-                    {name: '一档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l1c']},
-                    {name: '二档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l2c']},
-                    {name: '三档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l3c']},
-                    {name: '一档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l1r']},
-                    {name: '二档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l2r']},
-                    {name: '三档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l3r']}
+                series: [ //fixme: bug when player's time is difference with line's time
+                    {name: '一档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l1c']},
+                    {name: '二档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l2c']},
+                    {name: '三档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l3c']},
+                    {name: '一档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: line_data['l1r']},
+                    {name: '二档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: line_data['l2r']},
+                    {name: '三档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: line_data['l3r']},
+                    {
+                        name: USERNAME, type: 'line', data: score_data['real'],
+                        lineStyle: {normal: {type: 'solid',width: 5, color: '#44aaee'}},
+                        areaStyle: {normal: {color: '#99ddff'}}
+                    }
                 ]
             });
             predict_chart.hideLoading();
             predict_chart.setOption({
                 title: {
-                    text: '预测分数'
+                    text: '拟合分数'
                 },
-                tooltip: {},
+                tooltip: {
+                    trigger: 'axis'
+                },
                 legend: {
-                    data : ['一档','二档','三档']
+                    data : ['一档','二档','三档',USERNAME]
                 },
                 xAxis: {
                     type: 'category',
-                    data: data['times']
+                    data: line_data['times']
                 },
                 yAxis: {},
                 dataZoom: [{
@@ -71,9 +81,14 @@
                     end: 100
                 }],
                 series: [
-                    {name: '一档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l1p']},
-                    {name: '二档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l2p']},
-                    {name: '三档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l3p']}
+                    {name: '一档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l1p']},
+                    {name: '二档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l2p']},
+                    {name: '三档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l3p']},
+                    {
+                        name: USERNAME, type: 'line', data: score_data['predict'],
+                        lineStyle: {normal: {type: 'solid',width: 5, color: '#44aaee'}},
+                        areaStyle: {normal: {color: '#99ddff'}}
+                    }
                 ]
             });
         });
