@@ -5,7 +5,8 @@ import sqlite3
 import datetime
 
 app=Flask(__name__)
-#app.debug=True
+app.debug=True
+app.jinja_options['extensions'].append('jinja2.ext.do')
 
 ## internal function
 
@@ -33,6 +34,20 @@ def getevent(eventid):
 
 ## template helper
 
+@app.url_value_preprocessor
+def preproc_follower_ind(_,values):
+    if values is not None and 'ind' in values:
+        g.follower_ind=values['ind']
+
+@app.template_global('get_follower_info')
+def get_follower_info():
+    with sqlite3.connect('events.db') as db_master:
+        cur=db_master.cursor()
+        cur.execute('select id,name from follows where ind=?',[g.follower_ind])
+        res=cur.fetchone()
+        assert res, '没有找到该关注者'
+        g.fid, g.fname=res
+
 @app.template_filter('parsetime')
 def parse_timestamp_iso(x):
     return to_datetime(x).isoformat()
@@ -50,6 +65,10 @@ def index():
         g.events=cur.fetchall()
     return render_template('index.html')
 
+@app.route('/<int:eventid>')
+@app.route('/<int:eventid>/')
+def _event_index(eventid):
+    return redirect(url_for('event_index',eventid=eventid))
 
 @app.route('/<int:eventid>/index')
 def event_index(eventid):
@@ -83,14 +102,13 @@ def event_predict(eventid):
     return render_template('event_predict.html')
 
 @app.route('/<int:eventid>/follow<int:ind>')
+@app.route('/<int:eventid>/follow<int:ind>/')
 def event_follow(eventid,ind):
+    return redirect(url_for('follower_details',eventid=eventid,ind=ind))
+
+@app.route('/<int:eventid>/follow<int:ind>/details')
+def follower_details(eventid,ind):
     db=getevent(eventid)
-    with sqlite3.connect('events.db') as db_master:
-        cur=db_master.cursor()
-        cur.execute('select id,name from follows where ind=?',[ind])
-        res=cur.fetchone()
-        assert res, '没有找到该关注者'
-        g.fid, g.fname=res
     with db:
         cur=db.cursor()
         cur.execute('select time,level,score,rank from follow%d order by time desc limit 0,1'%ind)
@@ -98,10 +116,20 @@ def event_follow(eventid,ind):
         assert res, '没有该玩家的记录'
         g.ftime, g.flevel, g.fscore, g.frank=res
 
-    return render_template('event_follow.html')
+        # todo: user level support
+        cur.execute('select min(time), score, min(rank), max(rank) from follow%d group by score'%ind)
+        res=cur.fetchall()
+
+    return render_template('follow_details.html', scores=res)
+
+@app.route('/<int:eventid>/follow<int:ind>/score')
+def follower_scores(eventid,ind):
+    getevent(eventid)
+    return render_template('follow_score.html')
 
 ## api
 
+# noinspection PyUnresolvedReferences
 @app.route('/<int:eventid>/api_predict.json')
 def api_predict(eventid):
     db=getevent(eventid)

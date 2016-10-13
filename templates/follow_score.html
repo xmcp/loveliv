@@ -1,4 +1,4 @@
-{% extends "event_base.html" %}
+{% extends "follow_base.html" %}
 {% block content %}
     {{ super() }}
     <style>
@@ -14,19 +14,23 @@
 
     <script>
         var line_chart=echarts.init(document.getElementById('line-chart')),
-            predict_chart=echarts.init(document.getElementById('predict-chart'));
+            predict_chart=echarts.init(document.getElementById('predict-chart')),
+            USERNAME=decodeURIComponent("{{ g.fname | urlencode }}");
         line_chart.showLoading();
         predict_chart.showLoading();
 
-        $.get('api_predict.json').done(function(data) {
+        $.when(
+            $.get('{{ url_for('api_predict',eventid=g.eventid) }}'),
+            $.get('{{ url_for('api_follower_score',eventid=g.eventid,ind=g.follower_ind) }}')
+        ).done(function(data,_todo) {
             line_chart.hideLoading();
             line_chart.setOption({
                 title: {
-                    text: '档线变化'
+                    text: '实际分数'
                 },
                 tooltip: {},
                 legend: {
-                    data : ['一档·实际','二档·实际','三档·实际','一档·拟合','二档·拟合','三档·拟合']
+                    data : ['一档·实际','二档·实际','三档·实际','一档·拟合','二档·拟合','三档·拟合',USERNAME]
                 },
                 xAxis: {
                     type: 'category',
@@ -50,7 +54,7 @@
             predict_chart.hideLoading();
             predict_chart.setOption({
                 title: {
-                    text: '预测线变化'
+                    text: '预测分数'
                 },
                 tooltip: {},
                 legend: {

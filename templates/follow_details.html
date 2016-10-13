@@ -1,0 +1,44 @@
+{% extends "follow_base.html" %}
+{% block content %}
+    {{ super() }}
+    <style>
+        table.consolas td, table.consolas td * {
+            font-family: 'Consolas', 'Courier', monospace !important;
+        }
+    </style>
+
+    <div class="well well-lg" style="font-size: 1.2em">
+        <b>{{ g.fname }}</b> (ID: {{ g.fid }}, lv{{ g.flevel }}) /
+        <kbd>{{ g.fscore }}pt</kbd> / <kbd>#{{ g.frank }}</kbd>
+        / 更新于 {{ timestamp(g.ftime) }}
+    </div>
+
+    <table class="table table-hover consolas">
+        <thead>
+            <tr>
+                <th>时间</th>
+                <th>分数</th>
+                <th>排名</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set last=0 %}
+            {% for i in range(scores|length) %}
+                {% set time,score,rank1,rank2=scores[i] %}
+                <tr>
+                    <td>
+                        {{ time | strftime }}
+                    </td>
+                    <td>
+                        <i>+{{ score-(scores[i-1][1] if i!=0 else 0) }}</i>
+                        = <b>{{ score }}pt</b>
+                    </td>
+                    <td>
+                        <i>({{ rank1-scores[i-1][3] if i!=0 }})</i> <b>#{{ rank1 }}</b> →
+                        <b>#{{ rank2 }}</b> <i>(+{{ rank2-rank1 }})</i>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

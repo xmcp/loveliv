@@ -1,0 +1,14 @@
+{% extends "event_base.html" %}
+{% do get_follower_info() %}
+{% block title %}{{ g.fname }} - {{ super() }}{% endblock %}
+{% block content %}
+    {{ super() }}
+
+    <ul class="nav nav-tabs">
+        <li {{ 'class="active"'|safe if request.path.endswith('/details') }}><a href="details">得分详情</a></li>
+        <li {{ 'class="active"'|safe if request.path.endswith('/score') }}><a href="score">分数图像</a></li>
+        <li {{ 'class="active"'|safe if request.path.endswith('/rank') }}><a href="rank">排名图像</a></li>
+    </ul>
+
+    <br>
+{% endblock %}
