@@ -1,0 +1,71 @@
+{% extends "follow_base.html" %}
+{% block content %}
+    {{ super() }}
+    <style>
+        .chart {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+
+    <div id="rank-chart" class="chart"></div>
+    <script>
+        var rank_chart=echarts.init(document.getElementById('rank-chart')),
+            USERNAME=decodeURIComponent("{{ g.fname | urlencode }}");
+        $.get('{{ url_for('api_follower_rank',eventid=g.eventid,ind=g.follower_ind) }}').done(function(data) {
+            function make_line(x) {
+                return {
+                    label: { normal: {
+                        formatter: '#'+x
+                    }},
+                    tooltip: {
+                        formatter: '#'+x
+                    },
+                    data: [[
+                        {coord: [data['times'][0], x], symbol: 'none'},
+                        {coord: [data['times'][data['times'].length-1], x], symbol: 'none'}
+                    ]]
+                }
+            }
+            function array_max(x) {
+                var val=x[0];
+                for(var i=1;i<x.length;i++)
+                    if(x[i]>val)
+                        val=x[i];
+                return val;
+            }
+
+            rank_chart.hideLoading();
+            rank_chart.setOption({
+                title: {
+                    text: '排名变化'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data : [USERNAME]
+                },
+                xAxis: {
+                    type: 'category',
+                    data: data['times']
+                },
+                yAxis: {
+                    inverse: true,
+                    max: Math.max(array_max(data['rank']),25000)
+                },
+                dataZoom: [{
+                    type: 'slider',
+                    start: 0,
+                    end: 100
+                }],
+                series: [
+                    {name: USERNAME, type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['rank']},
+                    {name: '一档', type: 'scatter', data: [null], markLine: make_line(2300)},
+                    {name: '二档', type: 'scatter', data: [null], markLine: make_line(11500)},
+                    {name: '三档', type: 'scatter', data: [null], markLine: make_line(23000)}
+                ]
+            });
+        });
+    </script>
+{% endblock %}

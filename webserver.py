@@ -61,7 +61,19 @@ def parse_timestamp_str(x):
 @app.route('/')
 def index():
     with sqlite3.connect('events.db') as db:
-        cur=db.execute('select id,title,begin,end,last_update from events')
+        cur=db.cursor()
+        cur.execute('select id from events order by id desc limit 0,1')
+        res=cur.fetchone()
+        if res:
+            return redirect(url_for('event_index',eventid=res[0]))
+        else:
+            return redirect(url_for('event_list'))
+
+@app.route('/list')
+def event_list():
+    with sqlite3.connect('events.db') as db:
+        cur=db.cursor()
+        cur.execute('select id,title,begin,end,last_update from events')
         g.events=cur.fetchall()
     return render_template('index.html')
 
@@ -74,6 +86,7 @@ def _event_index(eventid):
 def event_index(eventid):
     db=getevent(eventid)
     scores=[]
+    last_action=[]
 
     with db:
         cur=db.cursor()
@@ -83,18 +96,36 @@ def event_index(eventid):
             scores.append({
                 'score': res[0],
                 'name': name,
+                'special': False,
                 'desc': '#%d'%res[1],
             })
+            cur.execute('select score,min(time) from follow%d group by score order by score desc limit 0,2'%ind)
+            res=cur.fetchmany(2)
+            if len(res)==2:
+                last,second=res
+                last_action.append({
+                    'name': name,
+                    'time': last[1],
+                    'score': last[0]-second[0],
+                })
+            else: #not enough data
+                last_action.append({
+                    'name': name,
+                    'time': None,
+                    'score': None,
+                })
+
         cur.execute('select t1cur,t1pre,t2cur,t2pre,t3cur,t3pre from line order by time desc limit 0,1')
         t1cur, t1pre, t2cur, t2pre, t3cur, t3pre=cur.fetchone() or [-1,-1,-1,-1,-1,-1]
         for name,cur,pre in [(1,t1cur,t1pre),(2,t2cur,t2pre),(3,t3cur,t3pre)]:
             scores.append({
                 'score': int(pre*(g.time-g.begin)/(g.end-g.begin)),
                 'name': '%d 档'%name,
+                'special': True,
                 'desc': '拟合 / 实际 %d / 预测 %d'%(cur,pre),
             })
 
-    return render_template('event_index.html',scores=scores)
+    return render_template('event_index.html',scores=scores,last_action=last_action)
 
 @app.route('/<int:eventid>/predict')
 def event_predict(eventid):
@@ -127,6 +158,11 @@ def follower_scores(eventid,ind):
     getevent(eventid)
     return render_template('follow_score.html')
 
+@app.route('/<int:eventid>/follow<int:ind>/rank')
+def follower_rank(eventid,ind):
+    getevent(eventid)
+    return render_template('follow_rank.html')
+
 ## api
 
 # noinspection PyUnresolvedReferences
@@ -137,18 +173,17 @@ def api_predict(eventid):
         cur=db.cursor()
         cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line')
         lines=cur.fetchall()
-    times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in lines]
     return jsonify(
-        times=times,
-        l1c=[x[2] for x in lines],
-        l2c=[x[4] for x in lines],
-        l3c=[x[6] for x in lines],
-        l1p=[x[1] for x in lines],
-        l2p=[x[3] for x in lines],
-        l3p=[x[5] for x in lines],
-        l1r=[x[1]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
-        l2r=[x[3]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
-        l3r=[x[5]*(x[0]-g.begin)/(g.end-g.begin) for x in lines],
+        times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in lines],
+        l1c=[int(x[2]) for x in lines],
+        l2c=[int(x[4]) for x in lines],
+        l3c=[int(x[6]) for x in lines],
+        l1p=[int(x[1]) for x in lines],
+        l2p=[int(x[3]) for x in lines],
+        l3p=[int(x[5]) for x in lines],
+        l1r=[int(x[1]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
+        l2r=[int(x[3]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
+        l3r=[int(x[5]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
     )
 
 @app.route('/<int:eventid>/follow<int:ind>/api_score.json')
@@ -156,13 +191,24 @@ def api_follower_score(eventid,ind):
     db=getevent(eventid)
     with db:
         cur=db.cursor()
-        cur.execute('select time,score from follow1')
+        cur.execute('select time,score from follow%d'%ind)
         scores=cur.fetchall()
-    times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in scores]
     return jsonify(
-        times=times,
-        real=[x[1] for x in scores],
-        predict=[x[1]/(x[0]-g.begin)*(g.end-g.begin) for x in scores],
+        times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in scores],
+        real=[int(x[1]) for x in scores],
+        predict=[int(x[1]/(x[0]-g.begin)*(g.end-g.begin)) for x in scores],
+    )
+
+@app.route('/<int:eventid>/follow<int:ind>/api_rank.json')
+def api_follower_rank(eventid,ind):
+    db=getevent(eventid)
+    with db:
+        cur=db.cursor()
+        cur.execute('select time,rank from follow%d'%ind)
+        ranks=cur.fetchall()
+    return jsonify(
+        times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in ranks],
+        rank=[int(x[1]) for x in ranks],
     )
 
 app.run(host='0.0.0.0',port=int(os.environ.get('LOVELIV_PORT',80)))
