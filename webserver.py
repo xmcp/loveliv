@@ -1,10 +1,13 @@
 #coding=utf-8
 from flask import *
+from flask_compress import Compress
 import os
 import sqlite3
 import datetime
 
 app=Flask(__name__)
+app.config['COMPRESS_LEVEL']=9
+Compress(app)
 app.debug=True
 app.jinja_options['extensions'].append('jinja2.ext.do')
 
@@ -97,7 +100,7 @@ def event_index(eventid):
                 'score': res[0],
                 'name': name,
                 'special': False,
-                'desc': '#%d'%res[1],
+                'desc': '#%d / 预测 %d pt'%(res[1],res[0]*(g.time-g.begin)/(g.end-g.begin)),
             })
             cur.execute('select score,min(time) from follow%d group by score order by score desc limit 0,2'%ind)
             res=cur.fetchmany(2)
@@ -122,7 +125,7 @@ def event_index(eventid):
                 'score': int(pre*(g.time-g.begin)/(g.end-g.begin)),
                 'name': '%d 档'%name,
                 'special': True,
-                'desc': '拟合 / 实际 %d / 预测 %d'%(cur,pre),
+                'desc': '拟合 / 实际 %d pt / 预测 %d pt'%(cur,pre),
             })
 
     return render_template('event_index.html',scores=scores,last_action=last_action)
@@ -137,9 +140,15 @@ def event_predict(eventid):
 def event_follow(eventid,ind):
     return redirect(url_for('follower_details',eventid=eventid,ind=ind))
 
+@app.route('/<int:eventid>/follow<int:ind>/stats')
+def follower_stats(eventid,ind):
+    getevent(eventid)
+    return render_template('follow_stats.html')
+
 @app.route('/<int:eventid>/follow<int:ind>/details')
 def follower_details(eventid,ind):
     db=getevent(eventid)
+    scores=[]
     with db:
         cur=db.cursor()
         cur.execute('select time,level,score,rank from follow%d order by time desc limit 0,1'%ind)
@@ -147,11 +156,22 @@ def follower_details(eventid,ind):
         assert res, '没有该玩家的记录'
         g.ftime, g.flevel, g.fscore, g.frank=res
 
-        # todo: user level support
         cur.execute('select min(time), score, min(rank), max(rank) from follow%d group by score'%ind)
-        res=cur.fetchall()
+        for score in cur.fetchall():
+            scores.append({
+                'type': 'score',
+                'value': score,
+                'time': score[0],
+            })
+        cur.execute('select min(time), level from follow%d group by level'%ind)
+        for level in cur.fetchall()[1:]:
+            scores.append({
+                'type': 'level',
+                'value': level,
+                'time': level[0]-1, #thus lv-update msg will displays first
+            })
 
-    return render_template('follow_details.html', scores=res)
+    return render_template('follow_details.html', scores=scores)
 
 @app.route('/<int:eventid>/follow<int:ind>/score')
 def follower_scores(eventid,ind):
@@ -184,6 +204,29 @@ def api_predict(eventid):
         l1r=[int(x[1]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
         l2r=[int(x[3]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
         l3r=[int(x[5]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
+    )
+
+@app.route('/<int:eventid>/follow<int:ind>/api_stats.json')
+def api_follower_stats(eventid,ind):
+    db=getevent(eventid)
+    times={}
+    scores={}
+    with db:
+        cur=db.cursor()
+        cur.execute('select min(time),score from follow%d group by score'%ind)
+        res=cur.fetchall()
+        for ind in range(len(res)):
+            hour=to_datetime(res[ind][0]).hour
+            score=res[ind][1]-res[ind-1][1] if ind>0 else None
+            times.setdefault(hour,0)
+            times[hour]+=1
+            if score is not None:
+                scores.setdefault(score,0)
+                scores[score]+=1
+
+    return jsonify(
+        times=list(times.items()),
+        scores=list(scores.items()),
     )
 
 @app.route('/<int:eventid>/follow<int:ind>/api_score.json')

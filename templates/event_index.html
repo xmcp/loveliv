@@ -17,10 +17,6 @@
     }
     </style>
 
-    <div class="well well-lg" style="font-size: 1.2em">
-        {{ timestamp(g.begin) }} ~ {{ timestamp(g.end) }}，更新于 {{ timestamp(g.real_time) }}
-    </div>
-
     <div class="row">
         <div class="col-md-7">
             <ul class="list-group">
@@ -37,6 +33,11 @@
             </ul>
         </div>
         <div class="col-md-5">
+            <div class="well well-lg" style="font-size: 1.2em">
+                <p>开始于 {{ timestamp(g.begin) }}</p>
+                <p>结束于 {{ timestamp(g.end) }}</p>
+                <p>更新于 {{ timestamp(g.real_time) }}</p>
+            </div>
             <ul class="list-group">
                 <li class="list-group-item active">最近得分</li>
                 {% for item in last_action %}

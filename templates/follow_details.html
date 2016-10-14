@@ -22,23 +22,34 @@
             </tr>
         </thead>
         <tbody>
-            {% set last=0 %}
-            {% for i in range(scores|length) %}
-                {% set time,score,rank1,rank2=scores[i] %}
-                <tr>
-                    <td>
-                        {{ time | strftime }}
-                    </td>
-                    <td>
-                        <i>+{{ score-(scores[i-1][1] if i!=0 else 0) }}</i>
-                        = <b>{{ score }}pt</b>
-                    </td>
-                    <td>
-                        <i>({{ rank1-scores[i-1][3] if i!=0 }})</i> <b>#{{ rank1 }}</b> →
-                        <b>#{{ rank2 }}</b> <i>(+{{ rank2-rank1 }})</i>
-                    </td>
-                </tr>
-            {% endfor %}
+            {% set scores=scores|sort(attribute='time') %}
+            {% with score=0, rank2=None %}
+                {% for i in range(scores|length) %}
+                    {% if scores[i].type=='score' %}
+                        {% set last_score,last_rank2=score,rank2 %}
+                        {% set time,score,rank1,rank2=scores[i].value %}
+                        <tr>
+                            <td>{{ time | strftime }}</td>
+                            <td>
+                                <i>+{{ score-last_score }}</i>
+                                = <b>{{ score }}pt</b>
+                            </td>
+                            <td>
+                                <i>({{ rank1-last_rank2 if last_rank2 is not none else '???' }})</i> <b>#{{ rank1 }}</b> →
+                                <b>#{{ rank2 }}</b> <i>(+{{ rank2-rank1 }})</i>
+                            </td>
+                        </tr>
+                    {% elif scores[i].type=='level' %}
+                        {% set time,lv=scores[i].value %}
+                        <tr>
+                            <td>{{ time | strftime }}</td>
+                            <td colspan="2">
+                                <b> &nbsp; → 升级到 Lv. {{ lv }}</b>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
         </tbody>
     </table>
 {% endblock %}

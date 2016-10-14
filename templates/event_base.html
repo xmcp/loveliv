@@ -2,7 +2,9 @@
 {% block title %}活动 #{{ g.eventid }}: {{ g.title }}{% endblock %}
 {% block content %}
     <nav class="navbar navbar-default"><div class="container-fluid">
-        <p class="navbar-text pull-right">LoveLiv</p>
+        <p class="navbar-text pull-right">
+            <a href="https://github.com/xmcp/loveliv" target="_blank">LoveLiv by @xmcp</a>
+        </p>
         <a class="navbar-brand" href="{{ url_for('event_list') }}">
             <span class="glyphicon glyphicon-chevron-left"></span> 返回
         </a>

@@ -18,9 +18,24 @@
         line_chart.showLoading();
         predict_chart.showLoading();
 
-        $.get('api_predict.json').done(function(data) {
-            line_chart.hideLoading();
-            line_chart.setOption({
+        $.get('{{ url_for('api_predict',eventid=g.eventid) }}').done(function(data) {
+            function get_player_score(url,name) {
+                $.get(url).done(function(data) {
+                    line_chart_args.legend.data.push(name);
+                    line_chart_args.series.push({
+                        name: name, type: 'line', data: data['real'],
+                        lineStyle: {normal: {type: 'dashed'}}
+                    });
+                    line_chart.setOption(line_chart_args);
+                    predict_chart_args.legend.data.push(name);
+                    predict_chart_args.series.push({
+                        name: name, type: 'line', data: data['predict'],
+                        lineStyle: {normal: {type: 'dashed'}}
+                    });
+                    predict_chart.setOption(predict_chart_args);
+                })
+            }
+            var line_chart_args={
                 title: {
                     text: '档线变化'
                 },
@@ -41,16 +56,18 @@
                     end: 100
                 }],
                 series: [
-                    {name: '一档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l1c']},
-                    {name: '二档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l2c']},
-                    {name: '三档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l3c']},
-                    {name: '一档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l1r']},
-                    {name: '二档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l2r']},
-                    {name: '三档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: data['l3r']}
+                    {name: '一档·实际', type: 'line', lineStyle: {normal: {type: 'solid'}}, data: data['l1c']},
+                    {name: '二档·实际', type: 'line', lineStyle: {normal: {type: 'solid'}}, data: data['l2c']},
+                    {name: '三档·实际', type: 'line', lineStyle: {normal: {type: 'solid'}}, data: data['l3c']},
+                    {name: '一档·拟合', type: 'line', lineStyle: {normal: {type: 'dotted'}}, data: data['l1r']},
+                    {name: '二档·拟合', type: 'line', lineStyle: {normal: {type: 'dotted'}}, data: data['l2r']},
+                    {name: '三档·拟合', type: 'line', lineStyle: {normal: {type: 'dotted'}}, data: data['l3r']}
                 ]
-            });
+            };
+            line_chart.hideLoading();
+            line_chart.setOption(line_chart_args);
             predict_chart.hideLoading();
-            predict_chart.setOption({
+            var predict_chart_args={
                 title: {
                     text: '预测线变化'
                 },
@@ -75,7 +92,11 @@
                     {name: '二档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l2p']},
                     {name: '三档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['l3p']}
                 ]
-            });
+            };
+            predict_chart.setOption(predict_chart_args);
+            {% for ind,name in g.follows %}
+                get_player_score('{{ url_for('api_follower_score',eventid=g.eventid,ind=ind) }}','{{ name }}');
+            {% endfor %}
         });
     </script>
 {% endblock %}
