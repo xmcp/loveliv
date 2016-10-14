@@ -1,26 +1,49 @@
 {% extends "base.html" %}
 {% block title %}活动 #{{ g.eventid }}: {{ g.title }}{% endblock %}
 {% block content %}
-    <nav class="navbar navbar-default"><div class="container-fluid">
-        <p class="navbar-text pull-right">
+    <nav class="navbar navbar-default navbar-fixed-top"><div class="container">
+        <p class="navbar-text pull-right hidden-sm">
             <a href="https://github.com/xmcp/loveliv" target="_blank">LoveLiv by @xmcp</a>
         </p>
-        <a class="navbar-brand" href="{{ url_for('event_list') }}">
-            <span class="glyphicon glyphicon-chevron-left"></span> 返回
-        </a>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{{ url_for('event_list') }}">
+                <span class="glyphicon glyphicon-chevron-left"></span><span class="visible-xs-inline"> 活动列表</span>
+            </a>
+        </div>
         <ul class="nav navbar-nav">
             <li {{ 'class="active"'|safe if request.path.endswith('/index') }}>
-                <a href="{{ url_for('event_index',eventid=g.eventid) }}">{{ g.title }}</a>
+                <a href="{{ url_for('event_index',eventid=g.eventid) }}">
+                    <span class="glyphicon glyphicon-home"></span> {{ g.title }}
+                </a>
             </li>
             <li {{ 'class="active"'|safe if request.path.endswith('/predict') }}>
-                <a href="{{ url_for('event_predict',eventid=g.eventid) }}">档线</a>
+                <a href="{{ url_for('event_predict',eventid=g.eventid) }}">
+                    <span class="glyphicon glyphicon-stats"></span> 档线</a>
             </li>
             {% for ind,name in g.follows %}
                 <li {{ 'class="active"'|safe if '/follow%d/'%ind in request.path }}>
-                    <a href="{{ url_for('event_follow',eventid=g.eventid,ind=ind) }}">{{ name }}</a>
+                    <a href="{{ url_for('event_follow',eventid=g.eventid,ind=ind) }}">
+                        <span class="glyphicon glyphicon-user"></span> {{ name }}</a>
                 </li>
             {% endfor %}
         </ul>
     </div></nav>
+    <style>
+        body {
+            padding-top: 70px; /* height of navbar-fixed-top is 50px */
+        }
+        @media (max-width: 767px) { /* no more navbar-fixed-top on mobile devices */
+            .navbar-fixed-top {
+                position: relative;
+                top: auto;
+            }
+            .navbar-collapse {
+                max-height: none;
+            }
+            body {
+                padding-top: 0;
+            }
+        }
+    </style>
 
 {% endblock %}

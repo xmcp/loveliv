@@ -1,13 +1,45 @@
 {% extends "base.html" %}
 {% block title %}活动列表{% endblock %}
 {% block content %}
+    <nav class="navbar navbar-default navbar-fixed-top"><div class="container">
+        <p class="navbar-text pull-right">
+            <a href="https://github.com/xmcp/loveliv" target="_blank">LoveLiv by @xmcp</a>
+        </p>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{{ url_for('event_list') }}">
+                <span class="glyphicon glyphicon-list-alt"></span> 活动列表
+            </a>
+
+            <a href="{{ url_for('index') }}" class="btn btn-default navbar-btn">
+                <span class="glyphicon glyphicon-share-alt"></span> 前往当前活动
+            </a>
+        </div>
+    </div></nav>
+    <style>
+        body {
+            padding-top: 70px; /* height of navbar-fixed-top is 50px */
+        }
+        @media (max-width: 767px) { /* no more navbar-fixed-top on mobile devices */
+            .navbar-fixed-top {
+                position: relative;
+                top: auto;
+            }
+            .navbar-collapse {
+                max-height: none;
+            }
+            body {
+                padding-top: 0;
+            }
+        }
+    </style>
+
     <div content="page-header"><h1>
         LoveLiv <small>SIF国服活动追踪器</small>
     </h1></div>
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>名称</th>
+                <th>活动名称</th>
                 <th>时间</th>
                 <th>最新爬取</th>
             </tr>
