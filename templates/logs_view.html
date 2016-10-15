@@ -1,0 +1,20 @@
+{% macro show_logs(logs,more=False) %}
+    <ul class="list-group">
+        {% for time,channel,content in logs %}
+            <li class="list-group-item">
+                <span class="timestamp">{{ time | strftime }}</span>
+                <b class="text-primary consolas">{{ channel }}</b>
+                {{ content }}
+            </li>
+        {% endfor %}
+        {% if more %}
+            <li class="list-group-item">
+                <button class="btn btn-link" data-toggle="modal" data-target="#logs-modal">
+                    <span class="glyphicon glyphicon-new-window"></span> 查看全部日志
+                </button>
+            </li>
+        {% endif %}
+    </ul>
+{% endmacro %}
+
+{{ show_logs(logs) }}

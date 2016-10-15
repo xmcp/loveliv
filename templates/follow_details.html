@@ -2,7 +2,7 @@
 {% block content %}
     {{ super() }}
     <style>
-        table.consolas td, table.consolas td * {
+        table.table-consolas td, table.table-consolas td * {
             font-family: 'Consolas', 'Courier', monospace !important;
         }
     </style>
@@ -13,7 +13,7 @@
         / 更新于 {{ timestamp(g.ftime) }}
     </div>
 
-    <table class="table table-hover consolas">
+    <table class="table table-hover table-consolas">
         <thead>
             <tr>
                 <th>时间</th>

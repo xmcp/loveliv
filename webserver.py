@@ -90,7 +90,18 @@ def event_list():
         cur=db.cursor()
         cur.execute('select id,title,begin,end,last_update from events')
         g.events=cur.fetchall()
-    return render_template('index.html')
+        cur.execute('select time,channel,content from logs order by time desc limit 0,8')
+        logs=cur.fetchall()
+
+    return render_template('index.html',logs=logs)
+
+@app.route('/logs')
+def raw_logs():
+    with sqlite3.connect('events.db') as db:
+        cur=db.cursor()
+        cur.execute('select time,channel,content from logs order by time desc')
+        logs = cur.fetchall()
+    return render_template('logs_view.html',logs=logs)
 
 @app.route('/<int:eventid>')
 @app.route('/<int:eventid>/')

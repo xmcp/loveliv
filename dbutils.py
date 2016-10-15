@@ -13,7 +13,7 @@ def init_db(eventid):
           t3pre integer,
           t3cur integer
         )''')
-        for i in (1,2,3,4):
+        for i in (1,2,3,4,5):
             db.execute('''
             create table if not exists follow%d (
               time integer,
@@ -36,4 +36,10 @@ def init_master():
             ind integer unique,
             id integer,
             name text
-        );''')
+        );
+        create table if not exists logs (
+            id integer primary key,
+            time integer,
+            channel text,
+            content text
+        )''')

@@ -12,9 +12,6 @@
         color: white;
         border-radius: 5px;
     }
-    span.event-score, .consolas {
-        font-family: 'Consolas', 'Courier', '微软雅黑', 'Microsoft YaHei', monospace;
-    }
     </style>
 
     <div class="row">
@@ -23,7 +20,7 @@
                 <li class="list-group-item active">当前分数</li>
                 {% for item in scores|sort(attribute='score',reverse=True) %}
                     <li class="list-group-item"><h3 class="list-group-item-heading">
-                        <span class="event-score">{{ item.score }} pt</span>
+                        <span class="event-score consolas">{{ item.score }} pt</span>
                         <span class="{{ 'text-primary' if item.special }}">{{ item.name }}</span>
                         {% if item.desc %}
                             <small>({{ item.desc }})</small>

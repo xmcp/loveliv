@@ -31,11 +31,11 @@
                 padding-top: 0;
             }
         }
+        #logs-frame {
+            width: 100%;
+        }
     </style>
 
-    <div content="page-header"><h1>
-        LoveLiv <small>SIF国服活动追踪器</small>
-    </h1></div>
     <table class="table table-hover">
         <thead>
             <tr>
@@ -56,4 +56,29 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% from "logs_view.html" import show_logs %}
+    {{ show_logs(logs,more=True) }}
+
+    <div class="modal fade" id="logs-modal"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            <h4 class="modal-title">
+                全部日志 &nbsp;
+                <button type="button" class="btn btn-primary" onclick="refresh_logs()">
+                    <span class="glyphicon glyphicon-refresh"></span> 刷新
+                </button>
+            </h4>
+        </div>
+        <div class="modal-body" id="logs-frame">
+            ……
+        </div>
+    </div></div></div>
+
+    <script>
+        function refresh_logs() {
+            $('#logs-frame').load('{{ url_for('raw_logs') }}');
+        }
+        refresh_logs();
+    </script>
 {% endblock %}
