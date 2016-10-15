@@ -35,12 +35,10 @@ def getevent(eventid):
 
     return sqlite3.connect('db/%d.db'%eventid)
 
-@before_request
+@app.before_request
 def graph_delta_setter():
-    if 'graph_delta' in session:
-        g.graph_delta=session['graph_delta']
-    else:
-        g.graph_delta=10 if 'Mobile' in request.useragent else 3
+    g.graph_delta=int(request.cookies.get('graph_delta', 10 if 'Mobile' in request.user_agent.string else 3))
+    assert g.graph_delta in [1,3,10], '计数点无效'
     
 ## template helper
 
@@ -82,8 +80,9 @@ def index():
 @app.route('/config/delta/<int:delta>')
 def set_graph(delta):
     assert delta in [1,3,10], '计数点无效'
-    session['graph_delta']=delta
-    return redirect(request.referrer or '/')
+    resp=make_response(redirect(request.referrer or '/'))
+    resp.set_cookie('graph_delta',str(delta))
+    return resp
             
 @app.route('/list')
 def event_list():
@@ -205,7 +204,7 @@ def api_predict(eventid):
     with db:
         cur=db.cursor()
         cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line')
-        lines=cur.fetchall()
+        lines=cur.fetchall()[::g.graph_delta]
     return jsonify(
         times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in lines],
         l1c=[int(x[2]) for x in lines],
@@ -248,7 +247,7 @@ def api_follower_score(eventid,ind):
     with db:
         cur=db.cursor()
         cur.execute('select time,score from follow%d'%ind)
-        scores=cur.fetchall()
+        scores=cur.fetchall()[::g.graph_delta]
     return jsonify(
         times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in scores],
         real=[int(x[1]) for x in scores],
