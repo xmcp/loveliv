@@ -35,6 +35,13 @@ def getevent(eventid):
 
     return sqlite3.connect('db/%d.db'%eventid)
 
+@before_request
+def graph_delta_setter():
+    if 'graph_delta' in session:
+        g.graph_delta=session['graph_delta']
+    else:
+        g.graph_delta=10 if 'Mobile' in request.useragent else 3
+    
 ## template helper
 
 @app.url_value_preprocessor
@@ -72,6 +79,12 @@ def index():
         else:
             return redirect(url_for('event_list'))
 
+@app.route('/config/delta/<int:delta>')
+def set_graph(delta):
+    assert delta in [1,3,10], '计数点无效'
+    session['graph_delta']=delta
+    return redirect(request.referrer or '/')
+            
 @app.route('/list')
 def event_list():
     with sqlite3.connect('events.db') as db:

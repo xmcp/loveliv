@@ -4,6 +4,18 @@
     <nav class="navbar navbar-default navbar-fixed-top"><div class="container">
         <p class="navbar-text pull-right hidden-sm">
             <a href="https://github.com/xmcp/loveliv" target="_blank">LoveLiv by @xmcp</a>
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="glyphicon glyphicon-cog"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">图表计数点</li>
+                        <li><a "{{ url_for('set_graph',delta=1) }}">每 1 分钟</a></li>
+                        <li><a "{{ url_for('set_graph',delta=3) }}">每 3 分钟</a></li>
+                        <li><a "{{ url_for('set_graph',delta=10) }}">每 10 分钟</a></li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">当前设置：每 {{ g.graph_delta }} 分钟</li>
         </p>
         <div class="navbar-header">
             <a class="navbar-brand" href="{{ url_for('event_list') }}">
