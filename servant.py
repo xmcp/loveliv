@@ -77,7 +77,7 @@ def _fetchall():
             )
     if datetime.datetime.now()-datetime.timedelta(hours=1)>evt_info['end']:
         log('debug','活动 #%d 结束，爬虫停止抓取'%eventid)
-        #raise SystemExit('活动结束')
+        raise SystemExit('活动结束')
 
     with sqlite3.connect('db/%d.db'%eventid) as db:
         db.execute('insert into line (time, t1pre, t1cur, t2pre, t2cur, t3pre, t3cur) values (?,?,?,?,?,?,?)', [
