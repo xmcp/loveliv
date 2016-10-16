@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "logs_view.html" import logs_style, show_logs %}
 {% block title %}活动列表{% endblock %}
 {% block content %}
     <nav class="navbar navbar-default navbar-fixed-top"><div class="container">
@@ -35,6 +36,7 @@
             width: 100%;
         }
     </style>
+    {{ logs_style() }}
 
     <table class="table table-hover">
         <thead>
@@ -57,7 +59,6 @@
         </tbody>
     </table>
 
-    {% from "logs_view.html" import show_logs %}
     {{ show_logs(logs,more=True) }}
 
     <div class="modal fade" id="logs-modal"><div class="modal-dialog modal-lg"><div class="modal-content">

@@ -1,5 +1,14 @@
 #coding=utf-8
 import sqlite3
+import datetime
+
+def log(ch,x):
+    print(' -> log to',ch,'channel :', x)
+    with sqlite3.connect('events.db') as db:
+        db.execute(
+            'insert into logs (time, channel, content) values (?,?,?)',
+            [int(datetime.datetime.now().timestamp()),ch,x]
+        )
 
 def init_db(eventid):
     with sqlite3.connect('db/%d.db'%eventid) as db:
@@ -41,5 +50,9 @@ def init_master():
             id integer primary key,
             time integer,
             channel text,
+            content text
+        );
+        create table if not exists push_msgs (
+            msgid integer primary key,
             content text
         )''')

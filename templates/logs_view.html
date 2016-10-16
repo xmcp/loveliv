@@ -1,9 +1,31 @@
+{% macro logs_style() %}
+    <style>
+        .logs-channel-info {
+            color: #337ab7;
+        }
+        .logs-channel-debug {
+            color: #aaaaaa;
+        }
+        .logs-channel-error {
+            color: #ca3331;
+        }
+        .logs-channel-success {
+            color: #0c962d;;
+        }
+        .logs-channel::before {
+            content: ' [';
+        }
+        .logs-channel::after {
+            content: '] ';
+        }
+    </style>
+{% endmacro %}
 {% macro show_logs(logs,more=False) %}
     <ul class="list-group">
         {% for time,channel,content in logs %}
             <li class="list-group-item">
                 <span class="timestamp">{{ time | strftime }}</span>
-                <b class="text-primary consolas">{{ channel }}</b>
+                <b class="logs-channel logs-channel-{{ channel }} consolas">{{ channel }}</b>
                 {{ content }}
             </li>
         {% endfor %}

@@ -5,22 +5,19 @@ import datetime
 import time
 import os
 
-from dbutils import init_db, init_master
+from utils import log, init_db, init_master
 s=requests.Session()
 s.mount('http://',HTTPAdapter(max_retries=1))
 
 TIMEOUT=8
 
-def log(ch,x):
-    print(' -> log to',ch,'channel :', x)
-    try:
-        with sqlite3.connect('events.db') as db:
-            db.execute(
-                'insert into logs (time, channel, content) values (?,?,?)',
-                [int(datetime.datetime.now().timestamp()),ch,x]
-            )
-    except Exception as e:
-        print('!!! log failed. [%s] %s'%(type(e),e))
+def push(x):
+    print(' -> add push:',x.replace('\n','\\n'))
+    with sqlite3.connect('events.db') as db:
+        db.execute(
+            'insert into push_msgs (content) values (?)',
+            ['%s %s'%(datetime.datetime.now().strftime('%m-%d %H:%M'),x)]
+        )
 
 def line_num(x):
     return 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4
@@ -78,6 +75,9 @@ def _fetchall():
                 'replace into events (id, title, begin, end, last_update) values (?,?,?,?,null)',
                 [eventid, evt_info['title'], int(evt_info['begin'].timestamp()), int(evt_info['end'].timestamp())]
             )
+    if datetime.datetime.now()-datetime.timedelta(hours=1)>evt_info['end']:
+        log('debug','活动 #%d 结束，爬虫停止抓取'%eventid)
+        #raise SystemExit('活动结束')
 
     with sqlite3.connect('db/%d.db'%eventid) as db:
         db.execute('insert into line (time, t1pre, t1cur, t2pre, t2cur, t3pre, t3cur) values (?,?,?,?,?,?,?)', [
@@ -90,13 +90,22 @@ def _fetchall():
             print(' == fetching score of #%d %s at place %d'%(uid,name,ind))
             details=_fetch_user_rank(uid,eventid)
 
+            last_user_score[ind]=(-1,-1,1)
             if last_user_score[ind] is not None:
                 if details['level']!=last_user_score[ind][0]:
                     log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_user_score[ind][0],details['level']))
+                    push('%s\n升级到了 lv. %d'%(name,details['level']))
                 if details['score']!=last_user_score[ind][1]:
                     log('info','关注者 %s 分数变更：%d pt → %d pt'%(name,last_user_score[ind][1],details['score']))
+                    push('%s\n获得了 %d pt\n→ %d pt (#%d)'%\
+                        (name,details['score']-last_user_score[ind][1],details['score'],details['rank']))
                 if line_num(details['rank'])!=last_user_score[ind][2]:
-                    log('info','关注者 %s 档位变更：L%d → L%d (#%d)'%(name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
+                    better_line=min(last_user_score[ind][2],line_num(details['rank']))
+                    log('info','关注者 %s 档位变更：L%d → L%d (#%d)'%\
+                        (name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
+                    push('%s\n%s了 %d 档\n当前排名：#%d'%\
+                         (name,'离开' if better_line==last_user_score[ind][2] else '离开',better_line,details['rank']))
+
             last_user_score[ind]=(details['level'],details['score'],line_num(details['rank']))
 
             db.execute(
@@ -109,7 +118,7 @@ def _fetchall():
 def mainloop():
     print('=== servant started')
     curmin=datetime.datetime.now().minute
-    log('debug','LoveLiv Servant 已启动，关注者共有 %d 人'%len(follows))
+    log('success','LoveLiv Servant 已启动，关注者共有 %d 人'%len(follows))
 
     while True:
         print(' -> waiting for next update...')
@@ -127,6 +136,9 @@ def mainloop():
         except Exception as e:
             bug='[%s] %s'%(type(e),e)
             print('!!!',bug)
+        except SystemExit:
+            bug='活动结束'
+            return
         else:
             bug=None
             with sqlite3.connect('events.db') as db:
