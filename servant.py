@@ -90,7 +90,6 @@ def _fetchall():
             print(' == fetching score of #%d %s at place %d'%(uid,name,ind))
             details=_fetch_user_rank(uid,eventid)
 
-            last_user_score[ind]=(-1,-1,1)
             if last_user_score[ind] is not None:
                 if details['level']!=last_user_score[ind][0]:
                     log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_user_score[ind][0],details['level']))
