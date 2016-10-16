@@ -39,7 +39,7 @@ def status_indicate(msg):
     if msg['isAt']:
         return '[发呆]'
 
-itchat.auto_login(hotReload=True)
+itchat.auto_login(hotReload=True,enableCmdQR=2)
 
 group_name=itchat.search_chatrooms(name='ll.xmcp.ml')[0]['UserName']
 print('wx group username:',group_name)
