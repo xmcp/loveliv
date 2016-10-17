@@ -127,7 +127,7 @@ def _fetchall():
                         (name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
                     if last_user_score[ind][2]>0 and details['rank']>0:
                         push('%s\n%s了 %d 档\n当前排名：#%d'%\
-                             (name,'离开' if better_line==last_user_score[ind][2] else '离开',better_line,details['rank']))
+                             (name,'离开' if better_line==last_user_score[ind][2] else '进入',better_line,details['rank']))
 
             last_user_score[ind]=(details['level'],details['score'],line_num(details['rank']))
 
