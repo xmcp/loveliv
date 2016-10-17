@@ -126,7 +126,7 @@ def _fetchall():
                     better_line=min(last_user_score[ind][2],line_num(details['rank']))
                     log('info','关注者 %s 档位变更：L%d → L%d (#%d)'%\
                         (name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
-                    if last_user_score[ind][2]>0 and details['rank']>0:
+                    if last_user_score[ind][2]>0 and line_num(details['rank'])>0:
                         push('%s\n%s了 %d 档\n当前排名：#%d'%\
                              (name,'离开' if better_line==last_user_score[ind][2] else '进入',better_line,details['rank']))
 
