@@ -54,11 +54,10 @@
                     inverse: true,
                     max: Math.max(array_max(data['rank']),25000)
                 },
-                dataZoom: [{
-                    type: 'slider',
-                    start: 0,
-                    end: 100
-                }],
+                dataZoom: [
+                    {type: 'slider',start: 0,end: 100,xAxisIndex:0},
+                    {type: 'slider',start: 0,end: 100,yAxisIndex:0}
+                ],
                 series: [
                     {name: USERNAME, type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['rank']},
                     {name: '一档', type: 'scatter', data: [null], markLine: make_line(2300)},

@@ -1,6 +1,5 @@
 /.idea/
 __pycache__/
 *.pyc
-/events.db
-db/*.db
+*.db
 /itchat.pkl

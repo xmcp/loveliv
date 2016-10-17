@@ -27,7 +27,7 @@ def push(x):
 def line_num(x):
     return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4
 
-def _fetch_user_rank(uid,eventid):
+def _fetch_user_rank(uid,eventid,retried=False):
     res=s.get(
         'http://sl.loveliv.es/ranking.php',
         params={
@@ -45,11 +45,15 @@ def _fetch_user_rank(uid,eventid):
                 'level': user['user_data']['level'],
             }
     else:
-        return {
-            'score': 0,
-            'rank': 999999,
-            'level': -1,
-        }
+        if not retried:
+            return _fetch_user_rank(uid,eventid,retried=True)
+        else:
+            raise RuntimeError('%d 的分数获取失败'%uid)
+        # return {
+        #     'score': 0,
+        #     'rank': 999999,
+        #     'level': -1,
+        # }
 
 def _fetch_line():
     res = s.get('http://2300.ml/api/json', timeout=TIMEOUT)
@@ -57,15 +61,7 @@ def _fetch_line():
     j = res.json()
 
     if args.EVENT_ID is not None:
-        eres=s.get('http://sifcn.loveliv.es/api/event_meta/%s'%args.EVENT_ID)
-        eres.raise_for_status()
-        ej=eres.json()
-        evt_info={
-            'id': int(ej['event_id']),
-            'title': ej['title'],
-            'begin': datetime.datetime.strptime(ej['begin']['time'],'%Y-%m-%d %H:%M:%S'),
-            'end': datetime.datetime.strptime(ej['end']['time'],'%Y-%m-%d %H:%M:%S'),
-        }
+        evt_info=evt_info_bkp
     else:
         evt_info={
             'id': int(j['event_info']['event_id']),
@@ -114,21 +110,24 @@ def _fetchall():
             details=_fetch_user_rank(uid,eventid)
 
             if last_user_score[ind] is not None:
-                if details['level']!=last_user_score[ind][0] and last_user_score[ind][0]>0:
+                if details['level']!=last_user_score[ind][0]:
                     log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_user_score[ind][0],details['level']))
-                    push('%s\n升级到了 lv. %d'%(name,details['level']))
+                    if last_user_score[ind][0]>0 and details['level']>0:
+                        push('%s\n升级到了 lv. %d'%(name,details['level']))
 
-                if details['score']!=last_user_score[ind][1] and last_user_score[ind][1]>=0:
+                if details['score']!=last_user_score[ind][1]:
                     log('info','关注者 %s 分数变更：%d pt → %d pt'%(name,last_user_score[ind][1],details['score']))
-                    push('%s\n获得了 %d pt\n→ %d pt (#%d)'%\
-                        (name,details['score']-last_user_score[ind][1],details['score'],details['rank']))
+                    if last_user_score[ind][1]>0 and details['score']>0:
+                        push('%s\n获得了 %d pt\n→ %d pt (#%d)'%\
+                            (name,details['score']-last_user_score[ind][1],details['score'],details['rank']))
 
-                if line_num(details['rank'])!=last_user_score[ind][2] and last_user_score[ind][2]>0:
+                if line_num(details['rank'])!=last_user_score[ind][2]:
                     better_line=min(last_user_score[ind][2],line_num(details['rank']))
                     log('info','关注者 %s 档位变更：L%d → L%d (#%d)'%\
                         (name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
-                    push('%s\n%s了 %d 档\n当前排名：#%d'%\
-                         (name,'离开' if better_line==last_user_score[ind][2] else '离开',better_line,details['rank']))
+                    if last_user_score[ind][2]>0 and details['rank']>0:
+                        push('%s\n%s了 %d 档\n当前排名：#%d'%\
+                             (name,'离开' if better_line==last_user_score[ind][2] else '离开',better_line,details['rank']))
 
             last_user_score[ind]=(details['level'],details['score'],line_num(details['rank']))
 
@@ -176,5 +175,16 @@ def mainloop():
                 log('error','爬取出错，用时 %.1f 秒：%s'%(time.time()-tstart,bug))
             else:
                 log('debug','活动 #%s 爬取成功，用时 %.1f 秒'%(eventid,time.time()-tstart))
+
+if args.EVENT_ID:
+    eres=s.get('http://sifcn.loveliv.es/api/event_meta/%s' % args.EVENT_ID)
+    eres.raise_for_status()
+    ej=eres.json()
+    evt_info_bkp={
+        'id': int(ej['event_id']),
+        'title': ej['title'],
+        'begin': datetime.datetime.strptime(ej['begin']['time'], '%Y-%m-%d %H:%M:%S'),
+        'end': datetime.datetime.strptime(ej['end']['time'], '%Y-%m-%d %H:%M:%S'),
+    }
 
 mainloop()
