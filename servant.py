@@ -48,12 +48,12 @@ def _fetch_user_rank(uid,eventid,retried=False):
         if not retried:
             return _fetch_user_rank(uid,eventid,retried=True)
         else:
-            raise RuntimeError('%d 的分数获取失败'%uid)
-        # return {
-        #     'score': 0,
-        #     'rank': 999999,
-        #     'level': -1,
-        # }
+            #raise RuntimeError('%d 的分数获取失败'%uid)
+            return {
+                'score': 0,
+                'rank': 999999,
+                'level': -1,
+            }
 
 def _fetch_line():
     res = s.get('http://2300.ml/api/json', timeout=TIMEOUT)
