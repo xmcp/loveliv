@@ -15,6 +15,7 @@ s=requests.Session()
 s.mount('http://',HTTPAdapter(max_retries=1))
 
 TIMEOUT=8
+INF=999999
 
 def push(x):
     print(' -> add push:',x.replace('\n','\\n'))
@@ -25,7 +26,7 @@ def push(x):
         )
 
 def line_num(x):
-    return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4
+    return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4 if x!=INF else -1
 
 def _fetch_user_rank(uid,eventid,retried=False):
     res=s.get(
@@ -51,7 +52,7 @@ def _fetch_user_rank(uid,eventid,retried=False):
             #raise RuntimeError('%d 的分数获取失败'%uid)
             return {
                 'score': 0,
-                'rank': 999999,
+                'rank': INF,
                 'level': -1,
             }
 
