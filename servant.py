@@ -4,8 +4,13 @@ import sqlite3
 import datetime
 import time
 import os
-
 from utils import log, init_db, init_master
+import argparse
+
+parser=argparse.ArgumentParser()
+parser.add_argument('-e',nargs='?',dest='EVENT_ID',help='Specify event id')
+args=parser.parse_args()
+
 s=requests.Session()
 s.mount('http://',HTTPAdapter(max_retries=1))
 
@@ -20,7 +25,7 @@ def push(x):
         )
 
 def line_num(x):
-    return 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4
+    return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4
 
 def _fetch_user_rank(uid,eventid):
     res=s.get(
@@ -40,18 +45,36 @@ def _fetch_user_rank(uid,eventid):
                 'level': user['user_data']['level'],
             }
     else:
-        raise RuntimeError(res.json())
+        return {
+            'score': 0,
+            'rank': 999999,
+            'level': -1,
+        }
 
 def _fetch_line():
-    res=s.get('http://2300.ml/api/json',timeout=TIMEOUT)
+    res = s.get('http://2300.ml/api/json', timeout=TIMEOUT)
     res.raise_for_status()
-    j=res.json()
-    return ({
-        'id': int(j['event_info']['event_id']),
-        'title': j['event_info']['title'],
-        'begin': datetime.datetime.strptime(j['event_info']['begin'],'%Y-%m-%d %H:%M:%S'),
-        'end': datetime.datetime.strptime(j['event_info']['end'],'%Y-%m-%d %H:%M:%S'),
-    }, j['predictions'])
+    j = res.json()
+
+    if args.EVENT_ID is not None:
+        eres=s.get('http://sifcn.loveliv.es/api/event_meta/%s'%args.EVENT_ID)
+        eres.raise_for_status()
+        ej=eres.json()
+        evt_info={
+            'id': int(ej['event_id']),
+            'title': ej['title'],
+            'begin': datetime.datetime.strptime(ej['begin']['time'],'%Y-%m-%d %H:%M:%S'),
+            'end': datetime.datetime.strptime(ej['end']['time'],'%Y-%m-%d %H:%M:%S'),
+        }
+    else:
+        evt_info={
+            'id': int(j['event_info']['event_id']),
+            'title': j['event_info']['title'],
+            'begin': datetime.datetime.strptime(j['event_info']['begin'],'%Y-%m-%d %H:%M:%S'),
+            'end': datetime.datetime.strptime(j['event_info']['end'],'%Y-%m-%d %H:%M:%S'),
+        }
+    return evt_info, j['predictions']
+
 
 if not os.path.exists('events.db'):
     print(' -> initializing master db...')
@@ -91,14 +114,16 @@ def _fetchall():
             details=_fetch_user_rank(uid,eventid)
 
             if last_user_score[ind] is not None:
-                if details['level']!=last_user_score[ind][0]:
+                if details['level']!=last_user_score[ind][0] and last_user_score[ind][0]>0:
                     log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_user_score[ind][0],details['level']))
                     push('%s\n升级到了 lv. %d'%(name,details['level']))
-                if details['score']!=last_user_score[ind][1]:
+
+                if details['score']!=last_user_score[ind][1] and last_user_score[ind][1]>=0:
                     log('info','关注者 %s 分数变更：%d pt → %d pt'%(name,last_user_score[ind][1],details['score']))
                     push('%s\n获得了 %d pt\n→ %d pt (#%d)'%\
                         (name,details['score']-last_user_score[ind][1],details['score'],details['rank']))
-                if line_num(details['rank'])!=last_user_score[ind][2]:
+
+                if line_num(details['rank'])!=last_user_score[ind][2] and last_user_score[ind][2]>0:
                     better_line=min(last_user_score[ind][2],line_num(details['rank']))
                     log('info','关注者 %s 档位变更：L%d → L%d (#%d)'%\
                         (name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
