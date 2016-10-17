@@ -145,10 +145,10 @@ def event_index(eventid):
         t1cur, t1pre, t2cur, t2pre, t3cur, t3pre=cur.fetchone() or [-1,-1,-1,-1,-1,-1]
         for name,cur,pre in [(1,t1cur,t1pre),(2,t2cur,t2pre),(3,t3cur,t3pre)]:
             scores.append({
-                'score': int(pre*(g.time-g.begin)/(g.end-g.begin)),
+                'score': cur,
                 'name': '%d 档'%name,
                 'special': True,
-                'desc': '拟合 / 实际 %d pt / 预测 %d pt'%(cur,pre),
+                'desc': '实际 / 预测 %d pt / 拟合 %d pt'%(pre,int(pre*(g.time-g.begin)/(g.end-g.begin))),
             })
 
     return render_template('event_index.html',scores=scores,last_action=last_action)
