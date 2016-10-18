@@ -135,7 +135,7 @@ def _fetchall():
                         (name,last_score,score_delta,details['score'],score_parser(score_delta,' (%s)')))
                     if last_score and details['score']>0:
                         push('%s\n%s获得了 %d pt\n→ %d pt (#%d)'%\
-                            (name,score_parser(score_delta,'%s\n'),score_delta,details['score'],details['rank']))
+                            (name,score_parser(score_delta,'进行了 %s\n'),score_delta,details['score'],details['rank']))
 
                 if line_num(details['rank'])!=line_num(last_rank):
                     better_line=min(line_num(last_rank),line_num(details['rank']))
