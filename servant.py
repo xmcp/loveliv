@@ -42,7 +42,7 @@ def _fetch_user_rank(ind,uid,eventid):
         res.json()
     except Exception as e:
         if last_user_score[ind] is not None:
-            log('error','%d 的分数获取失败，使用上次结果：[%s] %s'%(type(e),e))
+            log('error','%d 的分数获取失败，使用上次结果：[%s] %s'%(uid,type(e),e))
             return {
                 'score': last_user_score[ind][1],
                 'rank': last_user_score[ind][2],
