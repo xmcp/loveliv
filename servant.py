@@ -139,7 +139,7 @@ def _fetchall():
                         push('%s\n%s了 %d 档\n当前排名：#%d'%\
                              (name,'离开' if better_line==line_num(last_rank) else '进入',better_line,details['rank']))
 
-            last_user_score[ind]=(details['level'],details['score'],line_num(details['rank']))
+            last_user_score[ind]=(details['level'],details['score'],details['rank'])
 
             db.execute(
                 'insert into follow%d (time,level,score,rank) values (?,?,?,?)'%ind,
