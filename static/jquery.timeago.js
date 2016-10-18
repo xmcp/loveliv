@@ -48,9 +48,9 @@
       autoDispose: true,
       strings: {
         prefixAgo: null,
-        prefixFromNow: "从现在开始",
+        prefixFromNow: "未来",
         suffixAgo: "之前",
-        suffixFromNow: null,
+        suffixFromNow: "之后",
         seconds: "不到1分钟",
         minute: "1分钟",
         minutes: "%d分钟",

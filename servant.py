@@ -9,6 +9,7 @@ import argparse
 
 parser=argparse.ArgumentParser()
 parser.add_argument('-e',nargs='?',dest='EVENT_ID',help='Specify event id')
+parser.add_argument('-b',nargs='*',dest='BUGGY_USERS',help='User INDs that will skip errors when fetching')
 args=parser.parse_args()
 
 s=requests.Session()
@@ -46,17 +47,19 @@ def _fetch_user_rank(ind,uid,eventid,retried=False):
                 'level': user['user_data']['level'],
             }
     else:
-        if not retried:
+        if not retried and ind not in BUGGY_USERS:
             return _fetch_user_rank(ind,uid,eventid,retried=True)
         elif last_user_score[ind] is not None:
-            log('error','%d 的分数获取失败，使用上次结果'%uid)
+            if ind not in BUGGY_USERS:
+                log('error','%d 的分数获取失败，使用上次结果'%uid)
             return {
                 'score': last_user_score[ind][1],
                 'rank': last_user_score[ind][2],
                 'level': last_user_score[ind][0],
             }
         else:
-            log('error','%d 的分数获取失败'%uid)
+            if ind not in BUGGY_USERS:
+                log('error','%d 的分数获取失败'%uid)
             return {
                 'score': 0,
                 'rank': INF,
@@ -187,6 +190,7 @@ def mainloop():
                 log('debug','活动 #%s 爬取成功，用时 %.1f 秒'%(eventid,time.time()-tstart))
 
 if args.EVENT_ID:
+    print(' -> EVENT_ID specified. fetching details...')
     eres=s.get('http://sifcn.loveliv.es/api/event_meta/%s' % args.EVENT_ID)
     eres.raise_for_status()
     ej=eres.json()
@@ -196,5 +200,6 @@ if args.EVENT_ID:
         'begin': datetime.datetime.strptime(ej['begin']['time'], '%Y-%m-%d %H:%M:%S'),
         'end': datetime.datetime.strptime(ej['end']['time'], '%Y-%m-%d %H:%M:%S'),
     }
+BUGGY_USERS=[int(x) for x in args.BUGGY_USERS]
 
 mainloop()
