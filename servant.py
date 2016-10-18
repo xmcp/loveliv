@@ -29,7 +29,7 @@ def push(x):
 def line_num(x):
     return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4 if x!=INF else -1
 
-def _fetch_user_rank(ind,uid,eventid,retried=False):
+def _fetch_user_rank(ind,uid,eventid):
     res=s.get(
         'http://sl.loveliv.es/ranking.php',
         params={
@@ -47,10 +47,7 @@ def _fetch_user_rank(ind,uid,eventid,retried=False):
                 'level': user['user_data']['level'],
             }
     else:
-        if not retried and ind not in BUGGY_USERS:
-            log('debug','%d 的分数获取失败，正在重试'%uid)
-            return _fetch_user_rank(ind,uid,eventid,retried=True)
-        elif last_user_score[ind] is not None:
+        if last_user_score[ind] is not None:
             if ind not in BUGGY_USERS:
                 log('error','%d 的分数获取失败，使用上次结果'%uid)
             return {
@@ -135,7 +132,7 @@ def _fetchall():
                 if details['score']!=last_score:
                     score_delta=details['score']-last_score
                     log('info','关注者 %s 分数变更：%d pt + %d pt → %d pt%s'%\
-                        (name,last_score,score_delta,details['score'],score_delta(eventid,' (%s)')))
+                        (name,last_score,score_delta,details['score'],score_parser(score_delta,' (%s)')))
                     if last_score and details['score']>0:
                         push('%s\n%s获得了 %d pt\n→ %d pt (#%d)'%\
                             (name,score_parser(score_delta,'%s\n'),score_delta,details['score'],details['rank']))
@@ -178,6 +175,7 @@ def mainloop():
         except Exception as e:
             bug='[%s] %s'%(type(e),e)
             print('!!!',bug)
+            raise
         except SystemExit:
             bug='活动结束'
             return
@@ -206,6 +204,6 @@ if args.EVENT_ID:
         'begin': datetime.datetime.strptime(ej['begin']['time'], '%Y-%m-%d %H:%M:%S'),
         'end': datetime.datetime.strptime(ej['end']['time'], '%Y-%m-%d %H:%M:%S'),
     }
-BUGGY_USERS=[int(x) for x in args.BUGGY_USERS]
+BUGGY_USERS=[int(x) for x in args.BUGGY_USERS or []]
 
 mainloop()
