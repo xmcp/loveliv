@@ -18,8 +18,8 @@
         <thead>
             <tr>
                 <th>时间</th>
-                <th>类型</th>
                 <th>分数</th>
+                <th>类型</th>
                 <th>排名</th>
             </tr>
         </thead>
@@ -33,11 +33,11 @@
                         <tr>
                             <td>{{ time | strftime }}</td>
                             <td>
-                                {{ score_parser(score-last_score) or '其他' }}
-                            </td>
-                            <td>
                                 <i>+{{ score-last_score }}</i>
                                 = <b>{{ score }}pt</b>
+                            </td>
+                            <td>
+                                {{ score_parser(score-last_score) or '其他' }}
                             </td>
                             <td>
                                 <i>({{ rank1-last_rank2 if last_rank2 is not none else '???' }})</i> <b>#{{ rank1 }}</b> →
@@ -48,7 +48,7 @@
                         {% set time,lv=scores[i].value %}
                         <tr>
                             <td>{{ time | strftime }}</td>
-                            <td colspan="2">
+                            <td colspan="3">
                                 <b> &nbsp; → 升级到 Lv. {{ lv }}</b>
                             </td>
                         </tr>

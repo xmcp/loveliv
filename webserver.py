@@ -196,7 +196,7 @@ def follower_details(eventid,ind):
             scores.append({
                 'type': 'level',
                 'value': level,
-                'time': level[0]-1, #thus lv-update msg will displays first
+                'time': level[0]+1, #thus lv-update msg will displays after the song msg
             })
 
     return render_template('follow_details.html', scores=scores)
