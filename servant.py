@@ -175,7 +175,6 @@ def mainloop():
         except Exception as e:
             bug='[%s] %s'%(type(e),e)
             print('!!!',bug)
-            raise
         except SystemExit:
             bug='活动结束'
             return
