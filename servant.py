@@ -13,9 +13,9 @@ parser.add_argument('-b',nargs='*',dest='BUGGY_USERS',help='User INDs that will 
 args=parser.parse_args()
 
 s=requests.Session()
-s.mount('http://',HTTPAdapter(max_retries=1))
+s.mount('http://',HTTPAdapter(max_retries=2))
 
-TIMEOUT=10
+TIMEOUT=15
 INF=999999
 
 def push(x):
