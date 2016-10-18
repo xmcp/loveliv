@@ -1,11 +1,23 @@
 #coding=utf-8
 import itchat
+import itchat.out #monkey patching log out notification
 import threading
 import sqlite3
 import time
 from utils import log
 
 logged_errors=set()
+
+# patch itchat.out.println, if `LOG OUT` is being outputted, log and exit
+stopped=False
+def _monkey_patched_println(msg, *args, **kwargs):
+    if msg=='LOG OUT':
+        stopped=True
+        log('error','微信机器人会话已退出')
+    return _original_println(msg, *args, **kwargs)
+
+_original_println=itchat.out.print_line
+itchat.out.print_line=_monkey_patched_println
 
 def send_msgs():
     with sqlite3.connect('events.db') as db:
@@ -27,12 +39,13 @@ def send_msgs():
 
 def msg_mainloop():
     log('success','微信机器人已启动')
-    while True:
+    while not stopped:
         try:
             time.sleep(10)
             send_msgs()
         except Exception as e:
             print('!!! exception: [%s] %s'%(type(e),e))
+    log('debug','微信机器人已停止工作')
 
 @itchat.msg_register(itchat.content.TEXT,isGroupChat=True)
 def status_indicate(msg):

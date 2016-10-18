@@ -46,12 +46,12 @@
                     end: 100
                 }],
                 series: [ //fixme: bug when player's time is difference with line's time
-                    {name: '一档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l1c']},
-                    {name: '二档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l2c']},
-                    {name: '三档·实际', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l3c']},
-                    {name: '一档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: line_data['l1r']},
-                    {name: '二档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: line_data['l2r']},
-                    {name: '三档·拟合', type: 'line', lineStyle:{normal: {type: 'dotted'}}, data: line_data['l3r']},
+                    {name:'一档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l1c']},
+                    {name:'二档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l2c']},
+                    {name:'三档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l3c']},
+                    {name:'一档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'dotted'}},data: line_data['l1r']},
+                    {name:'二档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'dotted'}},data: line_data['l2r']},
+                    {name:'三档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'dotted'}},data: line_data['l3r']},
                     {
                         name: USERNAME, type: 'line', data: score_data['real'],
                         lineStyle: {normal: {type: 'solid',width: 5, color: '#44aaee'}},
@@ -81,9 +81,9 @@
                     end: 100
                 }],
                 series: [
-                    {name: '一档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l1p']},
-                    {name: '二档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l2p']},
-                    {name: '三档', type: 'line', lineStyle:{normal: {type: 'solid'}}, data: line_data['l3p']},
+                    {name:'一档',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'solid'}},data: line_data['l1p']},
+                    {name:'二档',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'solid'}},data: line_data['l2p']},
+                    {name:'三档',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'solid'}},data: line_data['l3p']},
                     {
                         name: USERNAME, type: 'line', data: score_data['predict'],
                         lineStyle: {normal: {type: 'solid',width: 5, color: '#44aaee'}},

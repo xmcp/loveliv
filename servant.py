@@ -15,7 +15,7 @@ args=parser.parse_args()
 s=requests.Session()
 s.mount('http://',HTTPAdapter(max_retries=1))
 
-TIMEOUT=8
+TIMEOUT=10
 INF=999999
 
 def push(x):
@@ -48,6 +48,7 @@ def _fetch_user_rank(ind,uid,eventid,retried=False):
             }
     else:
         if not retried and ind not in BUGGY_USERS:
+            log('debug','%d 的分数获取失败，正在重试'%uid)
             return _fetch_user_rank(ind,uid,eventid,retried=True)
         elif last_user_score[ind] is not None:
             if ind not in BUGGY_USERS:
