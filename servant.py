@@ -28,7 +28,7 @@ def push(x):
 def line_num(x):
     return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4 if x!=INF else -1
 
-def _fetch_user_rank(uid,eventid,retried=False):
+def _fetch_user_rank(ind,uid,eventid,retried=False):
     res=s.get(
         'http://sl.loveliv.es/ranking.php',
         params={
@@ -47,9 +47,16 @@ def _fetch_user_rank(uid,eventid,retried=False):
             }
     else:
         if not retried:
-            return _fetch_user_rank(uid,eventid,retried=True)
+            return _fetch_user_rank(ind,uid,eventid,retried=True)
+        elif last_user_score[ind] is not None:
+            log('error','%d 的分数获取失败，使用上次结果'%uid)
+            return {
+                'score': last_user_score[ind][1],
+                'rank': last_user_score[ind][2],
+                'level': last_user_score[ind][0],
+            }
         else:
-            #raise RuntimeError('%d 的分数获取失败'%uid)
+            log('error','%d 的分数获取失败'%uid)
             return {
                 'score': 0,
                 'rank': INF,
@@ -80,7 +87,7 @@ with sqlite3.connect('events.db') as _db:
     _cur=_db.execute('select ind,id,name from follows')
     follows=_cur.fetchall() # [(ind, user_id, name), ...]
     print(' -> got %d user(s) to follow'%len(follows))
-    last_user_score={x[0]:None for x in follows} # {ind: (level, score, line_num), ...}
+    last_user_score={x[0]:None for x in follows} # {ind: (level, score, rank), ...}
 
 def _fetchall():
     print(' == fetching line')
@@ -108,27 +115,29 @@ def _fetchall():
         ])
         for ind,uid,name in follows:
             print(' == fetching score of #%d %s at place %d'%(uid,name,ind))
-            details=_fetch_user_rank(uid,eventid)
+            details=_fetch_user_rank(ind,uid,eventid)
 
             if last_user_score[ind] is not None:
-                if details['level']!=last_user_score[ind][0]:
-                    log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_user_score[ind][0],details['level']))
+                last_lv, last_score, last_rank=last_user_score[ind]
+
+                if details['level']!=last_lv:
+                    log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_lv,details['level']))
                     if last_user_score[ind][0]>0 and details['level']>0:
                         push('%s\n升级到了 lv. %d'%(name,details['level']))
 
-                if details['score']!=last_user_score[ind][1]:
-                    log('info','关注者 %s 分数变更：%d pt → %d pt'%(name,last_user_score[ind][1],details['score']))
-                    if last_user_score[ind][1]>0 and details['score']>0:
+                if details['score']!=last_score:
+                    log('info','关注者 %s 分数变更：%d pt → %d pt'%(name,last_score,details['score']))
+                    if last_score and details['score']>0:
                         push('%s\n获得了 %d pt\n→ %d pt (#%d)'%\
-                            (name,details['score']-last_user_score[ind][1],details['score'],details['rank']))
+                            (name,details['score']-last_score,details['score'],details['rank']))
 
-                if line_num(details['rank'])!=last_user_score[ind][2]:
-                    better_line=min(last_user_score[ind][2],line_num(details['rank']))
+                if line_num(details['rank'])!=line_num(last_rank):
+                    better_line=min(line_num(last_rank),line_num(details['rank']))
                     log('info','关注者 %s 档位变更：L%d → L%d (#%d)'%\
-                        (name,last_user_score[ind][2],line_num(details['rank']),details['rank']))
-                    if last_user_score[ind][2]>0 and line_num(details['rank'])>0:
+                        (name,line_num(last_rank),line_num(details['rank']),details['rank']))
+                    if line_num(last_rank)>0 and line_num(details['rank'])>0:
                         push('%s\n%s了 %d 档\n当前排名：#%d'%\
-                             (name,'离开' if better_line==last_user_score[ind][2] else '进入',better_line,details['rank']))
+                             (name,'离开' if better_line==line_num(last_rank) else '进入',better_line,details['rank']))
 
             last_user_score[ind]=(details['level'],details['score'],line_num(details['rank']))
 
