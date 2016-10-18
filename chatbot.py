@@ -6,6 +6,7 @@ import sqlite3
 import time
 from utils import log
 
+CHAT_NAME='ll.xmcp.ml'
 logged_errors=set()
 
 # patch itchat.out.println, if `LOG OUT` is being outputted, log and exit
@@ -54,7 +55,7 @@ def status_indicate(msg):
 
 itchat.auto_login(hotReload=True,enableCmdQR=2)
 
-group_name=itchat.search_chatrooms(name='ll.xmcp.ml')[0]['UserName']
+group_name=itchat.search_chatrooms(name=CHAT_NAME)[0]['UserName']
 print('wx group username:',group_name)
 
 threading.Thread(target=msg_mainloop).start()

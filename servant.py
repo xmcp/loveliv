@@ -13,9 +13,8 @@ parser.add_argument('-b',nargs='*',dest='BUGGY_USERS',help='User INDs that will 
 args=parser.parse_args()
 
 s=requests.Session()
-s.mount('http://',HTTPAdapter(max_retries=2))
 
-TIMEOUT=15
+TIMEOUT=30
 INF=999999
 
 def push(x):
@@ -30,15 +29,34 @@ def line_num(x):
     return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4 if x!=INF else -1
 
 def _fetch_user_rank(ind,uid,eventid):
-    res=s.get(
-        'http://sl.loveliv.es/ranking.php',
-        params={
-            'userId':uid,
-            'event_id':eventid,
-        },
-        timeout=TIMEOUT,
-    )
-    res.raise_for_status()
+    try:
+        res=s.get(
+            'http://sl.loveliv.es/ranking.php',
+            params={
+                'userId':uid,
+                'event_id':eventid,
+            },
+            timeout=TIMEOUT,
+        )
+        res.raise_for_status()
+        res.json()
+    except Exception as e:
+        if last_user_score[ind] is not None:
+            log('error','%d 的分数获取失败，使用上次结果：[%s] %s'%(type(e),e))
+            return {
+                'score': last_user_score[ind][1],
+                'rank': last_user_score[ind][2],
+                'level': last_user_score[ind][0],
+            }
+        elif ind in BUGGY_USERS:
+            return {
+                'score': 0,
+                'rank': INF,
+                'level': -1,
+            }
+        else:
+            raise
+        
     for user in res.json()['data']:
         if user['user_data']['user_id']==uid:
             return {
@@ -49,7 +67,7 @@ def _fetch_user_rank(ind,uid,eventid):
     else:
         if last_user_score[ind] is not None:
             if ind not in BUGGY_USERS:
-                log('error','%d 的分数获取失败，使用上次结果'%uid)
+                log('error','%d 的分数无效，使用上次结果'%uid)
             return {
                 'score': last_user_score[ind][1],
                 'rank': last_user_score[ind][2],
@@ -57,7 +75,7 @@ def _fetch_user_rank(ind,uid,eventid):
             }
         else:
             if ind not in BUGGY_USERS:
-                log('error','%d 的分数获取失败'%uid)
+                log('error','%d 的分数无效'%uid)
             return {
                 'score': 0,
                 'rank': INF,
