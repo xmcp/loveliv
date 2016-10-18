@@ -4,7 +4,7 @@ import sqlite3
 import datetime
 import time
 import os
-from utils import log, init_db, init_master
+from utils import log, init_db, init_master, parse_score_meta
 import argparse
 
 parser=argparse.ArgumentParser()
@@ -97,14 +97,17 @@ def _fetchall():
     print(' == fetching line')
     evt_info,predict=_fetch_line()
     eventid=evt_info['id']
+    score_parser=parse_score_meta(eventid)
+
     if not os.path.exists('db/%d.db'%eventid): # init db
         print(' -> new event: event #%d %s'%(eventid,evt_info['title']))
         print(' -> creating database and writing event info...')
         init_db(eventid)
         with sqlite3.connect('events.db') as db:
             db.execute(
-                'replace into events (id, title, begin, end, last_update) values (?,?,?,?,null)',
-                [eventid, evt_info['title'], int(evt_info['begin'].timestamp()), int(evt_info['end'].timestamp())]
+                'insert or replace into events (id, title, begin, end, last_update, score_parser) '
+                'values (?,?,?,?,null,(select score_parser from events where id=?))',
+                [eventid,evt_info['title'],int(evt_info['begin'].timestamp()),int(evt_info['end'].timestamp()),eventid]
             )
     if datetime.datetime.now()-datetime.timedelta(hours=1)>evt_info['end']:
         log('debug','活动 #%d 结束，爬虫停止抓取'%eventid)
@@ -130,10 +133,12 @@ def _fetchall():
                         push('%s\n升级到了 lv. %d'%(name,details['level']))
 
                 if details['score']!=last_score:
-                    log('info','关注者 %s 分数变更：%d pt → %d pt'%(name,last_score,details['score']))
+                    score_delta=details['score']-last_score
+                    log('info','关注者 %s 分数变更：%d pt + %d pt → %d pt%s'%\
+                        (name,last_score,score_delta,details['score'],score_delta(eventid,' (%s)')))
                     if last_score and details['score']>0:
-                        push('%s\n获得了 %d pt\n→ %d pt (#%d)'%\
-                            (name,details['score']-last_score,details['score'],details['rank']))
+                        push('%s\n%s获得了 %d pt\n→ %d pt (#%d)'%\
+                            (name,score_parser(score_delta,'%s\n'),score_delta,details['score'],details['rank']))
 
                 if line_num(details['rank'])!=line_num(last_rank):
                     better_line=min(line_num(last_rank),line_num(details['rank']))

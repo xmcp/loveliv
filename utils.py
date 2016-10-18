@@ -1,6 +1,8 @@
 #coding=utf-8
 import sqlite3
 import datetime
+import functools
+import score_parser
 
 def log(ch,x):
     print(' -> log to',ch,'channel :', x)
@@ -39,7 +41,8 @@ def init_master():
             title text,
             begin integer,
             end integer,
-            last_update integer
+            last_update integer,
+            score_parser text
         );
         create table if not exists follows (
             ind integer unique,
@@ -56,3 +59,20 @@ def init_master():
             msgid integer primary key,
             content text
         )''')
+
+@functools.lru_cache()
+def parse_score_meta(eventid):
+    with sqlite3.connect('events.db') as db:
+        cur=db.cursor()
+        cur.execute('select score_parser from events where id=?',[eventid])
+        res=cur.fetchone()
+    if res and res[0]:
+        def wrapper(x,format_str='%s'):
+            orig_res=score_parser.parsers[res[0]](x)
+            if orig_res:
+                return format_str%orig_res
+            else:
+                return ''
+        return wrapper
+    else:
+        return lambda x:''

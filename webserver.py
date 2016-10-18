@@ -4,6 +4,7 @@ from flask_compress import Compress
 import os
 import sqlite3
 import datetime
+from utils import parse_score_meta
 
 app=Flask(__name__)
 app.config['COMPRESS_LEVEL']=9
@@ -39,16 +40,20 @@ def getevent(eventid):
 def graph_delta_setter():
     g.graph_delta=int(request.cookies.get('graph_delta', 10 if 'Mobile' in request.user_agent.string else 3))
     assert g.graph_delta in [1,3,10], '计数点无效'
-    
-## template helper
 
 @app.url_value_preprocessor
 def preproc_follower_ind(_,values):
     if values is not None and 'ind' in values:
         g.follower_ind=values['ind']
 
+## template helper
+
+@app.template_global('get_score_parser')
+def template_get_score_parser(evt):
+    return parse_score_meta(evt)
+
 @app.template_global('get_follower_info')
-def get_follower_info():
+def template_get_follower_info():
     with sqlite3.connect('events.db') as db_master:
         cur=db_master.cursor()
         cur.execute('select id,name from follows where ind=?',[g.follower_ind])
