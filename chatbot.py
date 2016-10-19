@@ -53,6 +53,12 @@ def status_indicate(msg):
     if msg['isAt']:
         return '[发呆]'
 
+@itchat.msg_register(itchat.content.TEXT,isGroupChat=False)
+def custom_push(msg):
+    cmd,_,content=msg['Content'].partition(' ')
+    if cmd.lower()=='send':
+        return '成功' if itchat.send_msg(content,toUserName=group_name) else '失败'
+        
 itchat.auto_login(hotReload=True,enableCmdQR=2)
 
 group_name=itchat.search_chatrooms(name=CHAT_NAME)[0]['UserName']

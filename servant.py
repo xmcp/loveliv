@@ -16,6 +16,7 @@ s=requests.Session()
 
 TIMEOUT=30
 INF=999999
+err_level=0
 
 def push(x):
     print(' -> add push:',x.replace('\n','\\n'))
@@ -29,6 +30,7 @@ def line_num(x):
     return -1 if x<=0 else 1 if x<=2300 else 2 if x<=11500 else 3 if x<=23000 else 4 if x!=INF else -1
 
 def _fetch_user_rank(ind,uid,eventid):
+    global err_level
     try:
         res=s.get(
             'http://sl.loveliv.es/ranking.php',
@@ -42,7 +44,9 @@ def _fetch_user_rank(ind,uid,eventid):
         res.json()
     except Exception as e:
         if last_user_score[ind] is not None:
-            log('error','%d 的分数获取失败，使用上次结果：[%s] %s'%(uid,type(e),e))
+            if ind not in BUGGY_USERS:
+                err_level+=2
+                log('error','%d 的分数获取失败，使用上次结果：[%s] %s'%(uid,type(e),e))
             return {
                 'score': last_user_score[ind][1],
                 'rank': last_user_score[ind][2],
@@ -67,6 +71,7 @@ def _fetch_user_rank(ind,uid,eventid):
     else:
         if last_user_score[ind] is not None:
             if ind not in BUGGY_USERS:
+                err_level+=2
                 log('error','%d 的分数无效，使用上次结果'%uid)
             return {
                 'score': last_user_score[ind][1],
@@ -75,6 +80,7 @@ def _fetch_user_rank(ind,uid,eventid):
             }
         else:
             if ind not in BUGGY_USERS:
+                err_level+=2
                 log('error','%d 的分数无效'%uid)
             return {
                 'score': 0,
@@ -142,11 +148,6 @@ def _fetchall():
             if last_user_score[ind] is not None:
                 last_lv, last_score, last_rank=last_user_score[ind]
 
-                if details['level']!=last_lv:
-                    log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_lv,details['level']))
-                    if last_user_score[ind][0]>0 and details['level']>0:
-                        push('%s\n升级到了 lv. %d'%(name,details['level']))
-
                 if details['score']!=last_score:
                     score_delta=details['score']-last_score
                     log('info','关注者 %s 分数变更：%d pt + %d pt → %d pt%s'%\
@@ -154,6 +155,11 @@ def _fetchall():
                     if last_score and details['score']>0:
                         push('%s\n%s获得了 %d pt\n→ %d pt (#%d)'%\
                             (name,score_parser(score_delta,'进行了 %s\n'),score_delta,details['score'],details['rank']))
+
+                if details['level']!=last_lv:
+                    log('info','关注者 %s 等级变更：lv %d → lv %d'%(name,last_lv,details['level']))
+                    if last_user_score[ind][0]>0 and details['level']>0:
+                        push('%s\n升级到了 lv. %d'%(name,details['level']))
 
                 if line_num(details['rank'])!=line_num(last_rank):
                     better_line=min(line_num(last_rank),line_num(details['rank']))
@@ -173,11 +179,21 @@ def _fetchall():
     return eventid
 
 def mainloop():
+    global err_level
+    in_err_mode=False
+    
     print('=== servant started')
     curmin=datetime.datetime.now().minute
     log('success','LoveLiv Servant 已启动，关注者共有 %d 人'%len(follows))
 
-    while True:
+    while True:    
+        if err_level>=100:
+            if in_err_mode:
+                err_level=100
+            else:
+                in_err_mode=True
+                push('[SYSTEM]\n警告：网络稳定性异常')
+                    
         print(' -> waiting for next update...')
         while curmin==datetime.datetime.now().minute:
             time.sleep(1)
@@ -191,12 +207,19 @@ def mainloop():
         try:
             eventid=_fetchall()
         except Exception as e:
+            err_level+=2
             bug='[%s] %s'%(type(e),e)
             print('!!!',bug)
         except SystemExit:
             bug='活动结束'
             return
         else:
+            if err_level<0:
+                if in_err_mode:
+                    in_err_mode=False
+                    push('[SYSTEM]\n网络稳定性恢复正常')
+                err_level=0
+            
             bug=None
             with sqlite3.connect('events.db') as db:
                 db.execute(
@@ -208,7 +231,8 @@ def mainloop():
             if bug is not None:
                 log('error','爬取出错，用时 %.1f 秒：%s'%(time.time()-tstart,bug))
             else:
-                log('debug','活动 #%s 爬取成功，用时 %.1f 秒'%(eventid,time.time()-tstart))
+                pass
+                #log('debug','活动 #%s 爬取成功，用时 %.1f 秒'%(eventid,time.time()-tstart))
 
 if args.EVENT_ID:
     print(' -> EVENT_ID specified. fetching details...')

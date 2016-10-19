@@ -28,9 +28,9 @@
                 }
             }
             function array_max(x) {
-                var val=x[0];
+                var val=0;
                 for(var i=1;i<x.length;i++)
-                    if(x[i]>val)
+                    if(x[i]>val && x[i]!==999999)
                         val=x[i];
                 return val;
             }
@@ -55,11 +55,17 @@
                     max: Math.max(array_max(data['rank']),25000)
                 },
                 dataZoom: [
-                    {type: 'slider',start: 0,end: 100,xAxisIndex:0},
-                    {type: 'slider',start: 0,end: 100,yAxisIndex:0}
+                    {type: 'slider',start: 0,end: 100, xAxisIndex:0},
+                    {type: 'slider',start: 0,end: 100, yAxisIndex:0}
                 ],
                 series: [
-                    {name: USERNAME, type: 'line', lineStyle:{normal: {type: 'solid'}}, data: data['rank']},
+                    {
+                        name: USERNAME, type: 'line',
+                        itemStyle: {normal: {opacity: 0}},
+                        lineStyle: {normal: {type: 'solid'}},
+                        areaStyle: {normal: {color: '#ffeeee'}},
+                        data: data['rank']
+                    },
                     {name: '一档', type: 'scatter', data: [null], markLine: make_line(2300)},
                     {name: '二档', type: 'scatter', data: [null], markLine: make_line(11500)},
                     {name: '三档', type: 'scatter', data: [null], markLine: make_line(23000)}

@@ -24,13 +24,15 @@
                     line_chart_args.legend.data.push(name);
                     line_chart_args.series.push({
                         name: name, type: 'line', data: data['real'],
-                        lineStyle: {normal: {type: 'dashed'}}
+                        lineStyle: {normal: {type: 'dashed'}},
+                        itemStyle: {normal: {opacity:0}}
                     });
                     line_chart.setOption(line_chart_args);
                     predict_chart_args.legend.data.push(name);
                     predict_chart_args.series.push({
                         name: name, type: 'line', data: data['predict'],
-                        lineStyle: {normal: {type: 'dashed'}}
+                        lineStyle: {normal: {type: 'dashed'}},
+                        itemStyle: {normal: {opacity:0}}
                     });
                     predict_chart.setOption(predict_chart_args);
                 })
