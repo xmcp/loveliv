@@ -201,9 +201,9 @@ def mainloop():
     log('success','LoveLiv Servant 已启动，关注者共有 %d 人'%len(follows))
 
     while True:    
-        if err_level>=50:
+        if err_level>=30:
             if in_err_mode:
-                err_level=50
+                err_level=30
             else:
                 in_err_mode=True
                 push('[SYSTEM]\n警告：网络稳定性异常')
@@ -218,6 +218,7 @@ def mainloop():
         tstart=time.time()
         eventid=None
         bug=None
+        last_errlevel=err_level
         try:
             eventid=_fetchall()
         except Exception as e:
@@ -233,7 +234,7 @@ def mainloop():
                     in_err_mode=False
                     push('[SYSTEM]\n网络稳定性恢复正常')
                 err_level=0
-            else:
+            elif last_errlevel==err_level: #no error this turn
                 err_level-=2
             
             bug=None
