@@ -45,7 +45,7 @@ def _fetch_user_rank(ind,uid,eventid):
     except Exception as e:
         if last_user_score[ind] is not None:
             if ind not in BUGGY_USERS:
-                err_level+=2
+                err_level+=3
                 log('error','%d 的分数获取失败，使用上次结果：[%s] %s'%(uid,type(e),e))
             return {
                 'score': last_user_score[ind][1],
@@ -71,7 +71,7 @@ def _fetch_user_rank(ind,uid,eventid):
     else:
         if last_user_score[ind] is not None:
             if ind not in BUGGY_USERS:
-                err_level+=2
+                err_level+=3
                 log('error','%d 的分数无效，使用上次结果'%uid)
             return {
                 'score': last_user_score[ind][1],
@@ -80,7 +80,7 @@ def _fetch_user_rank(ind,uid,eventid):
             }
         else:
             if ind not in BUGGY_USERS:
-                err_level+=2
+                err_level+=3
                 log('error','%d 的分数无效'%uid)
             return {
                 'score': 0,
@@ -104,7 +104,7 @@ def _fetch_line():
         }
     return evt_info, j['predictions']
 
-
+last_line_result=None
 if not os.path.exists('events.db'):
     print(' -> initializing master db...')
     init_master()
@@ -115,8 +115,22 @@ with sqlite3.connect('events.db') as _db:
     last_user_score={x[0]:None for x in follows} # {ind: (level, score, rank), ...}
 
 def _fetchall():
+    global last_line_result
+    global err_level
+    
     print(' == fetching line')
-    evt_info,predict=_fetch_line()
+    try:
+        evt_info,predict=_fetch_line()
+    except Exception as e:
+        if last_line_result:
+            err_level+=3
+            log('error','档线获取失败，使用上次结果')
+            evt_info,predict=last_line_result
+        else:
+            raise
+    else:
+        last_line_result=evt_info,predict
+    
     eventid=evt_info['id']
     score_parser=parse_score_meta(eventid)
 
@@ -187,9 +201,9 @@ def mainloop():
     log('success','LoveLiv Servant 已启动，关注者共有 %d 人'%len(follows))
 
     while True:    
-        if err_level>=100:
+        if err_level>=50:
             if in_err_mode:
-                err_level=100
+                err_level=50
             else:
                 in_err_mode=True
                 push('[SYSTEM]\n警告：网络稳定性异常')
@@ -207,7 +221,7 @@ def mainloop():
         try:
             eventid=_fetchall()
         except Exception as e:
-            err_level+=2
+            err_level+=3
             bug='[%s] %s'%(type(e),e)
             print('!!!',bug)
         except SystemExit:
@@ -220,7 +234,7 @@ def mainloop():
                     push('[SYSTEM]\n网络稳定性恢复正常')
                 err_level=0
             else:
-                err_level-=1
+                err_level-=2
             
             bug=None
             with sqlite3.connect('events.db') as db:
