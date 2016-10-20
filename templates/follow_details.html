@@ -1,5 +1,4 @@
 {% extends "follow_base.html" %}
-{% set score_parser=get_score_parser(g.eventid) %}
 {% block content %}
     {{ super() }}
     <style>
@@ -37,7 +36,7 @@
                                 = <b>{{ score }}pt</b>
                             </td>
                             <td>
-                                {{ score_parser(score-last_score) or '其他' }}
+                                {{ g.score_parser(score-last_score) or '其他' }}
                             </td>
                             <td>
                                 <i>({{ rank1-last_rank2 if last_rank2 is not none else '???' }})</i> <b>#{{ rank1 }}</b> →

@@ -214,11 +214,13 @@ def mainloop():
             bug='活动结束'
             return
         else:
-            if err_level<0:
+            if err_level<=0:
                 if in_err_mode:
                     in_err_mode=False
                     push('[SYSTEM]\n网络稳定性恢复正常')
                 err_level=0
+            else:
+                err_level-=1
             
             bug=None
             with sqlite3.connect('events.db') as db:

@@ -20,7 +20,7 @@ def getevent(eventid):
     assert os.path.isfile('db/%d.db'%eventid), '分数数据库不存在'
     with sqlite3.connect('events.db') as db:
         cur=db.cursor()
-        cur.execute('select title,begin,`end`,last_update from events where id=?',[eventid])
+        cur.execute('select title,begin,`end`,last_update,score_parser from events where id=?',[eventid])
         res=cur.fetchone()
         assert res, '活动信息不存在'
 
@@ -33,6 +33,7 @@ def getevent(eventid):
     g.end=res[2]
     g.real_time=res[3]
     g.time=g.real_time if g.real_time<g.end else g.end
+    g.score_parser=parse_score_meta(eventid)
 
     return sqlite3.connect('db/%d.db'%eventid)
 
@@ -148,10 +149,10 @@ def event_index(eventid):
 
         cur.execute('select t1cur,t1pre,t2cur,t2pre,t3cur,t3pre from line order by time desc limit 0,1')
         t1cur, t1pre, t2cur, t2pre, t3cur, t3pre=cur.fetchone() or [-1,-1,-1,-1,-1,-1]
-        for name,cur,pre in [(1,t1cur,t1pre),(2,t2cur,t2pre),(3,t3cur,t3pre)]:
+        for name,cur,pre in [(2300,t1cur,t1pre),(11500,t2cur,t2pre),(23000,t3cur,t3pre)]:
             scores.append({
                 'score': cur,
-                'name': '%d 档'%name,
+                'name': '#%d'%name,
                 'special': True,
                 'desc': '实际 / 预测 %d pt / 拟合 %d pt'%(pre,int(pre*(g.time-g.begin)/(g.end-g.begin))),
             })
@@ -252,9 +253,11 @@ def api_follower_stats(eventid,ind):
                 scores.setdefault(score,0)
                 scores[score]+=1
 
+    ks=list(scores.keys())
     return jsonify(
         times=list(times.items()),
-        scores=list(scores.items()),
+        scores_keys=['%d pt'%k for k in ks],
+        scores_values=[scores[k] for k in ks],
     )
 
 @app.route('/<int:eventid>/follow<int:ind>/api_score.json')
