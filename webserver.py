@@ -76,7 +76,7 @@ def parse_timestamp_str(x):
 def index():
     with sqlite3.connect('events.db') as db:
         cur=db.cursor()
-        cur.execute('select id from events order by id desc limit 0,1')
+        cur.execute('select id from events order by end desc limit 0,1')
         res=cur.fetchone()
         if res:
             return redirect(url_for('event_index',eventid=res[0]))
@@ -94,7 +94,7 @@ def set_graph(delta):
 def event_list():
     with sqlite3.connect('events.db') as db:
         cur=db.cursor()
-        cur.execute('select id,title,begin,end,last_update from events')
+        cur.execute('select id,title,begin,end,last_update from events order by end desc')
         g.events=cur.fetchall()
         cur.execute('select time,channel,content from logs order by time desc limit 0,8')
         logs=cur.fetchall()
@@ -108,6 +108,35 @@ def raw_logs():
         cur.execute('select time,channel,content from logs order by time desc')
         logs = cur.fetchall()
     return render_template('logs_view.html',logs=logs)
+
+@app.route('/badge')
+def event_badge():
+    with sqlite3.connect('events.db') as db:
+        cur=db.cursor()
+        cur.execute('select id,end from events order by end desc limit 0,1')
+        res=cur.fetchone()
+        if res:
+            eventid,eventend=res
+        else:
+            return 'No event.'
+
+    db=getevent(eventid)
+    with db:
+        cur=db.cursor()
+        cur.execute('select time, t1pre, t1cur, t2pre, t2cur, t3pre, t3cur from line order by time desc limit 0,1')
+        linetime,t1p,t1c,t2p,t2c,t3p,t3c=cur.fetchone()
+        follows={}
+        for ind,name in g.follows:
+            cur.execute('select time,score,rank from follow%d order by time desc limit 0,1'%ind)
+            follows[ind]=[name]
+            follows[ind].extend(cur.fetchone())
+
+    return render_template(
+        'badge.html',
+        evtend=eventend,
+        line=dict(time=linetime,t1p=t1p,t1c=t1c,t2p=t2p,t2c=t2c,t3p=t3p,t3c=t3c),
+        follows={k:dict(name=v[0],time=v[1],score=v[2],rank=v[3]) for k,v in follows.items()}
+    )
 
 @app.route('/<int:eventid>')
 @app.route('/<int:eventid>/')
@@ -253,7 +282,7 @@ def api_follower_stats(eventid,ind):
                 scores.setdefault(score,0)
                 scores[score]+=1
 
-    ks=list(scores.keys())
+    ks=list(sorted(scores.keys()))
     return jsonify(
         times=list(times.items()),
         scores_keys=['%d pt'%k for k in ks],

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>#{{ g.eventid }}: {{ g.title }} - LoveLiv</title>
+    <style>
+        * {
+            font-family: 'Helvetica Neue', Helvetica, Arial, '微软雅黑', 'Microsoft YaHei', sans-serif;
+        }
+        kbd {
+            font-family: 'Consolas', 'Courier', '微软雅黑', 'Microsoft YaHei', monospace;
+        }
+        p {
+            margin: .75em 0 .75em 0;
+        }
+    </style>
+</head>
+<body>
+    <p>
+        <b>{{ g.title }}</b> /
+        <kbd>{{ evtend | strftime }}</kbd> 结束
+    </p>
+
+    {# todo: show line.time #}
+    <hr>
+    <p><b>一档</b> / <kbd>{{ line.t1c }} pt</kbd> / <kbd>预测 {{ line.t1p }} pt</kbd></p>
+    <p><b>二档</b> / <kbd>{{ line.t2c }} pt</kbd> / <kbd>预测 {{ line.t2p }} pt</kbd></p>
+    <p><b>三档</b> / <kbd>{{ line.t3c }} pt</kbd> / <kbd>预测 {{ line.t3p }} pt</kbd></p>
+
+    <hr>
+    {% for ind,follow in follows|dictsort %}
+        <p>
+            <b>{{ follow.name }}</b> /
+            <kbd>{{ follow.score }} pt</kbd> /
+            <kbd>#{{ follow.rank }}</kbd>
+        </p>
+    {% endfor %}
+
+    <hr>
+    <p>
+        <kbd>{{ line.time | strftime }}</kbd> 更新 /
+        <a href="{{ url_for('event_index',eventid=g.eventid) }}" target="_self">回到主站</a>
+    </p>
+
+</body>
+</html>

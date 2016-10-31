@@ -15,6 +15,9 @@
             <a href="{{ url_for('index') }}" class="btn btn-default navbar-btn">
                 <span class="glyphicon glyphicon-share-alt"></span> 前往当前活动
             </a>
+            <a href="{{ url_for('event_badge') }}" class="btn btn-link navbar-btn">
+                <span class="glyphicon glyphicon-bullhorn"></span> 档线监控
+            </a>
         </div>
     </div></nav>
     <style>
@@ -35,6 +38,9 @@
         }
         #logs-frame {
             width: 100%;
+        }
+        .btn-link:hover, .btn-link:active, .btn-link:focus {
+            text-decoration: none !important;
         }
     </style>
     {{ logs_style() }}
