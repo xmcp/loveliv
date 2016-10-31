@@ -75,4 +75,4 @@ def parse_score_meta(eventid):
                 return ''
         return wrapper
     else:
-        return lambda x:''
+        return lambda x,y=None:''
