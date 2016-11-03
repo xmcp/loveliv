@@ -3,6 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/icon/apple-57-precomposed.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/icon/apple-72-precomposed.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/icon/apple-114-precomposed.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/icon/apple-144-precomposed.png" />
     <title>#{{ g.eventid }}: {{ g.title }} - LoveLiv</title>
     <style>
         * {
@@ -37,7 +41,7 @@
         <p>
             <b>{{ follow.name }}</b> /
             <kbd>{{ follow.score }} pt</kbd> /
-            <kbd>#{{ follow.rank }}</kbd>
+            <kbd>#{{ follow.rank if follow.rank!=999999 else 'INF' }}</kbd>
         </p>
     {% endfor %}
 
