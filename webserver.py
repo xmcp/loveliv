@@ -133,7 +133,7 @@ def event_badge():
 
     return render_template(
         'badge.html',
-        evtend=eventend,
+        timeleft=to_datetime(eventend)-datetime.datetime.now(),
         line=dict(time=linetime,t1p=t1p,t1c=t1c,t2p=t2p,t2c=t2c,t3p=t3p,t3c=t3c),
         follows={k:dict(name=v[0],time=v[1],score=v[2],rank=v[3]) for k,v in follows.items()}
     )

@@ -19,7 +19,11 @@
 <body>
     <p>
         <b>{{ g.title }}</b> /
-        <kbd>{{ evtend | strftime }}</kbd> 结束
+        {% if timeleft.total_seconds()>0 %}
+            还剩 {{ timeleft.days }} 天 {{ timeleft.seconds//3600 }} 小时
+        {% else %}
+            已经结束
+        {% endif %}
     </p>
 
     {# todo: show line.time #}
