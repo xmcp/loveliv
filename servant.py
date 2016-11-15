@@ -33,7 +33,7 @@ def _fetch_user_rank(ind,uid,eventid):
     global err_level
     try:
         res=s.get(
-            'http://sl.loveliv.es/ranking.php',
+            'https://siflive.umisonoda.com/ranking.php',
             params={
                 'userId':uid,
                 'event_id':eventid,
@@ -102,7 +102,13 @@ def _fetch_line():
             'begin': datetime.datetime.strptime(j['event_info']['begin'],'%Y-%m-%d %H:%M:%S'),
             'end': datetime.datetime.strptime(j['event_info']['end'],'%Y-%m-%d %H:%M:%S'),
         }
-    return evt_info, j['predictions']
+
+    predict=j['predictions']
+    for scores in ['2300','11500','23000']:
+        if scores not in predict:
+            predict[scores]={'predict':0,'current':0}
+
+    return evt_info, predict
 
 last_line_result=None
 if not os.path.exists('events.db'):
