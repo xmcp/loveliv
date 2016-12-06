@@ -94,12 +94,12 @@ def set_graph(delta):
 def event_list():
     with sqlite3.connect('events.db') as db:
         cur=db.cursor()
-        cur.execute('select id,title,begin,end,last_update from events order by end desc')
+        cur.execute('select id,title,begin,end,last_update,score_parser from events order by end desc')
         g.events=cur.fetchall()
         cur.execute('select time,channel,content from logs order by time desc limit 0,8')
         logs=cur.fetchall()
 
-    return render_template('index.html',logs=logs)
+    return render_template('index.html',logs=logs,curtime=datetime.datetime.now().timestamp())
 
 @app.route('/logs')
 def raw_logs():

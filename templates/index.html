@@ -50,16 +50,23 @@
             <tr>
                 <th>活动名称</th>
                 <th>时间</th>
+                <th>类型</th>
                 <th>最新爬取</th>
             </tr>
         </thead>
         <tbody>
-            {% for eventid,title,begin,end,last_update in g.events %}
+            {% for eventid,title,begin,end,last_update,score_parser in g.events %}
                 <tr>
                     <td><a href="{{ url_for('event_index',eventid=eventid) }}">#{{ eventid }} {{ title }}</a></td>
                     <td>
+                        {% if end>curtime %}
+                            <span class="pull-right label label-primary">
+                                <span class="glyphicon glyphicon-flash"></span> 进行中
+                            </span>
+                        {% endif %}
                         {{ timestamp(begin) }} ~ {{ timestamp(end) }}
                     </td>
+                    <td class="consolas">{{ score_parser or '(None)' }}</td>
                     <td>{{ timestamp(last_update) }}</td>
                 </tr>
             {% endfor %}
