@@ -23,7 +23,7 @@ table=[
     [357, 328, 300, 286],
 ]
 evt_scores={}
-modes=['Ez']*4+['Nm']*4+['Hd']*4+['Ex']*4
+modes=['Ez']*4+['Nm']*4+['Hd']*4+['EX']*4
 scores='SABC'*4
 nums='1234'
 for r, row in enumerate(table):
@@ -38,6 +38,6 @@ def parse_score(x):
     elif x==55:
         return 'Hd 失败'
     elif x==91:
-        return 'Ex 失败'
+        return 'EX 失败'
     elif x in evt_scores:
         return ' 或 '.join(evt_scores[x])

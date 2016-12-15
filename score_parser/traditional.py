@@ -36,7 +36,7 @@ table=[
 ]
 
 evt_scores={}
-modes=['Ez']+['Nm']*3+['Hd']*4+['Ex']*4
+modes=['Ez']+['Nm']*3+['Hd']*4+['EX']*4
 scores='SSABSABCSABC'
 combos='SABC-'
 for r, row in enumerate(table):
