@@ -1,5 +1,5 @@
 import requests
-from requests.adapters import HTTPAdapter
+import pyquery
 import sqlite3
 import datetime
 import time
@@ -10,7 +10,9 @@ import argparse
 parser=argparse.ArgumentParser()
 parser.add_argument('-e',nargs='?',dest='EVENT_ID',help='Specify event id')
 parser.add_argument('-b',nargs='*',dest='BUGGY_USERS',help='User INDs that will skip errors when fetching')
+parser.add_argument('-c',dest='CRAWL_HTML',action='store_true',help='Crawl HTML-Formatted line data instead of JSON API')
 args=parser.parse_args()
+assert not args.CRAWL_HTML or args.EVENT_ID is not None, 'EVENT_ID is needed with CRAWL_HTML flag'
 
 s=requests.Session()
 
@@ -89,24 +91,37 @@ def _fetch_user_rank(ind,uid,eventid):
             }
 
 def _fetch_line():
-    res = s.get('http://2300.ml/api/json', timeout=TIMEOUT)
-    res.raise_for_status()
-    j = res.json()
-
-    if args.EVENT_ID is not None:
+    if args.CRAWL_HTML:
         evt_info=evt_info_bkp
-    else:
-        evt_info={
-            'id': int(j['event_info']['event_id']),
-            'title': j['event_info']['title'],
-            'begin': datetime.datetime.strptime(j['event_info']['begin'],'%Y-%m-%d %H:%M:%S'),
-            'end': datetime.datetime.strptime(j['event_info']['end'],'%Y-%m-%d %H:%M:%S'),
+        res=s.get('http://2300.ml/',timeout=TIMEOUT)
+        res.raise_for_status()
+        pyq=pyquery.PyQuery(res.text)
+        predict={
+            '2300': {'predict': int(pyq('#pred_2300').text()), 'current': int(pyq('#curr_2300').text())},
+            '11500': {'predict': int(pyq('#pred_11500').text()), 'current': int(pyq('#curr_11500').text())},
+            '23000': {'predict': 0, 'current': 0},
         }
 
-    predict=j['predictions']
-    for scores in ['2300','11500','23000']:
-        if scores not in predict:
-            predict[scores]={'predict':0,'current':0}
+
+    else:
+        res=s.get('http://2300.ml/api/json',timeout=TIMEOUT)
+        res.raise_for_status()
+        j=res.json()
+
+        if args.EVENT_ID is not None:
+            evt_info=evt_info_bkp
+        else:
+            evt_info={
+                'id': int(j['event_info']['event_id']),
+                'title': j['event_info']['title'],
+                'begin': datetime.datetime.strptime(j['event_info']['begin'],'%Y-%m-%d %H:%M:%S'),
+                'end': datetime.datetime.strptime(j['event_info']['end'],'%Y-%m-%d %H:%M:%S'),
+            }
+
+        predict=j['predictions']
+        for scores in ['2300','11500','23000']:
+            if scores not in predict:
+                predict[scores]={'predict':0,'current':0}
 
     return evt_info, predict
 
