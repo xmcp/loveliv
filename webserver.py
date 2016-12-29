@@ -39,8 +39,8 @@ def getevent(eventid):
 
 @app.before_request
 def graph_delta_setter():
-    g.graph_delta=int(request.cookies.get('graph_delta', 10 if 'Mobile' in request.user_agent.string else 3))
-    assert g.graph_delta in [1,3,10], '计数点无效'
+    g.graph_delta=int(request.cookies.get('graph_delta', 15 if 'Mobile' in request.user_agent.string else 3))
+    assert g.graph_delta in [1,3,15], '计数点无效'
 
 @app.url_value_preprocessor
 def preproc_follower_ind(_,values):
@@ -85,7 +85,7 @@ def index():
 
 @app.route('/config/delta/<int:delta>')
 def set_graph(delta):
-    assert delta in [1,3,10], '计数点无效'
+    assert delta in [1,3,15], '计数点无效'
     resp=make_response(redirect(request.referrer or '/'))
     resp.set_cookie('graph_delta',str(delta))
     return resp
@@ -311,7 +311,7 @@ def api_follower_rank(eventid,ind):
         ranks=cur.fetchall()
     return jsonify(
         times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in ranks],
-        rank=[int(x[1]) for x in ranks],
+        rank=[min(100000,int(x[1])) for x in ranks],
     )
 
 app.run(host='0.0.0.0',port=int(os.environ.get('LOVELIV_PORT',80)))
