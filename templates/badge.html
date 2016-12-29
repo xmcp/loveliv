@@ -18,19 +18,23 @@
         p {
             margin: .75em 0 .75em 0;
         }
+        a {
+            color: black;
+        }
+        .errlog span {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <p>
-        <b>{{ g.title }}</b> /
+        <b><a href="{{ url_for('event_index',eventid=g.eventid) }}">{{ g.title }}</a></b> /
         {% if timeleft.total_seconds()>0 %}
             还剩 {{ timeleft.days }} 天 {{ timeleft.seconds//3600 }} 小时
         {% else %}
             已经结束
         {% endif %}
     </p>
-
-    {# todo: show line.time #}
     <hr>
     <p><b>一档</b> / <kbd>{{ line.t1c }} pt</kbd> / <kbd>预测 {{ line.t1p }} pt</kbd></p>
     <p><b>二档</b> / <kbd>{{ line.t2c }} pt</kbd> / <kbd>预测 {{ line.t2p }} pt</kbd></p>
@@ -39,7 +43,7 @@
     <hr>
     {% for ind,follow in follows|dictsort %}
         <p>
-            <b>{{ follow.name }}</b> /
+            <b><a href="{{ url_for('follower_details',eventid=g.eventid,ind=ind) }}">{{ follow.name }}</a></b> /
             <kbd>{{ follow.score }} pt</kbd> /
             <kbd>#{{ follow.rank if follow.rank!=999999 else 'INF' }}</kbd>
         </p>
@@ -48,8 +52,11 @@
     <hr>
     <p>
         <kbd>{{ line.time | strftime }}</kbd> 更新 /
-        <a href="{{ url_for('event_index',eventid=g.eventid) }}" target="_self">回到主站</a>
+        <a href="{{ url_for('event_list') }}"><b>返回主页</b></a>
     </p>
+    {% for time,content in err_logs %}
+        <p class="errlog"><kbd>{{ time | strftime }}</kbd> / <span>{{ content }}</span></p>
+    {% endfor %}
 
 </body>
 </html>

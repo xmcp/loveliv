@@ -119,6 +119,8 @@ def event_badge():
             eventid,eventend=res
         else:
             return 'No event.'
+        cur.execute("select time,content from logs where channel='error' order by time desc limit 0,3")
+        err_logs=cur.fetchall()
 
     db=getevent(eventid)
     with db:
@@ -135,7 +137,8 @@ def event_badge():
         'badge.html',
         timeleft=to_datetime(eventend)-datetime.datetime.now(),
         line=dict(time=linetime,t1p=t1p,t1c=t1c,t2p=t2p,t2c=t2c,t3p=t3p,t3c=t3c),
-        follows={k:dict(name=v[0],time=v[1],score=v[2],rank=v[3]) for k,v in follows.items()}
+        follows={k:dict(name=v[0],time=v[1],score=v[2],rank=v[3]) for k,v in follows.items()},
+        err_logs=err_logs,
     )
 
 @app.route('/<int:eventid>')

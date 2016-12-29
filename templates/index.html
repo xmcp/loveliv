@@ -42,6 +42,15 @@
         .btn-link:hover, .btn-link:active, .btn-link:focus {
             text-decoration: none !important;
         }
+        .evt-type-score_match {
+            color: blue;
+        }
+        .evt-type-medley_fes {
+            color: brown;
+        }
+        .evt-type-traditional {
+            color: green;
+        }
     </style>
     {{ logs_style() }}
 
@@ -66,7 +75,7 @@
                         {% endif %}
                         {{ timestamp(begin) }} ~ {{ timestamp(end) }}
                     </td>
-                    <td class="consolas">{{ score_parser or '(None)' }}</td>
+                    <td class="consolas"><b class="evt-type-{{ score_parser }}">{{ score_parser or '(None)' }}</b></td>
                     <td>{{ timestamp(last_update) }}</td>
                 </tr>
             {% endfor %}

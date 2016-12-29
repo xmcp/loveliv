@@ -99,7 +99,7 @@ def _fetch_line():
         predict={
             '2300': {'predict': int(pyq('#pred_2300').text()), 'current': int(pyq('#curr_2300').text())},
             '11500': {'predict': int(pyq('#pred_11500').text()), 'current': int(pyq('#curr_11500').text())},
-            '23000': {'predict': 0, 'current': 0},
+            '23000': {'predict': int(pyq('#pred_23000').text()), 'current': int(pyq('#curr_23000').text())},
         }
 
 
@@ -165,8 +165,10 @@ def _fetchall():
                 'values (?,?,?,?,null,(select score_parser from events where id=?))',
                 [eventid,evt_info['title'],int(evt_info['begin'].timestamp()),int(evt_info['end'].timestamp()),eventid]
             )
-    if datetime.datetime.now()-datetime.timedelta(hours=1)>evt_info['end']:
+    if datetime.datetime.now()-datetime.timedelta(minutes=3)>evt_info['end']:
         log('debug','活动 #%d 结束，爬虫停止抓取'%eventid)
+        push('[SYSTEM]\n活动 #%d 结束\n#2300 : %d pt\n#11500 : %d pt\n#23000 : %d pt'%(
+            eventid,predict['2300']['current'],predict['11500']['current'],predict['23000']['current']))
         raise SystemExit('活动结束')
 
     with sqlite3.connect('db/%d.db'%eventid) as db:
@@ -227,7 +229,7 @@ def mainloop():
                 err_level=30
             else:
                 in_err_mode=True
-                push('[SYSTEM]\n警告：网络稳定性异常')
+                push('[SYSTEM]\n这破网烂得我都报警了')
                     
         print(' -> waiting for next update...')
         while curmin==datetime.datetime.now().minute:
@@ -253,7 +255,7 @@ def mainloop():
             if err_level<=0:
                 if in_err_mode:
                     in_err_mode=False
-                    push('[SYSTEM]\n网络稳定性恢复正常')
+                    push('[SYSTEM]\n这破网好像缓过来了')
                 err_level=0
             elif last_errlevel==err_level: #no error this turn
                 err_level-=2
