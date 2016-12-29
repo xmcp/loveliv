@@ -249,7 +249,7 @@ def api_predict(eventid):
     db=getevent(eventid)
     with db:
         cur=db.cursor()
-        cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line')
+        cur.execute('select time,t1pre,t1cur,t2pre,t2cur,t3pre,t3cur from line order by time asc')
         lines=cur.fetchall()[::g.graph_delta]
     return jsonify(
         times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in lines],
@@ -294,7 +294,7 @@ def api_follower_score(eventid,ind):
     db=getevent(eventid)
     with db:
         cur=db.cursor()
-        cur.execute('select time,score from follow%d'%ind)
+        cur.execute('select time,score from follow%d order by time asc'%ind)
         scores=cur.fetchall()[::g.graph_delta]
     return jsonify(
         times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in scores],
@@ -307,7 +307,7 @@ def api_follower_rank(eventid,ind):
     db=getevent(eventid)
     with db:
         cur=db.cursor()
-        cur.execute('select time,rank from follow%d'%ind)
+        cur.execute('select time,rank from follow%d order by time asc'%ind)
         ranks=cur.fetchall()
     return jsonify(
         times=[parse_timestamp_str(x[0]).replace(' ','\n') for x in ranks],
