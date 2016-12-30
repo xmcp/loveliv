@@ -17,16 +17,24 @@ app.jinja_options['extensions'].append('jinja2.ext.do')
 to_datetime=datetime.datetime.fromtimestamp # this name is so fucking long
 
 def getevent(eventid):
-    assert os.path.isfile('db/%d.db'%eventid), '分数数据库不存在'
-    with sqlite3.connect('events.db') as db:
-        cur=db.cursor()
+    def does_follower_exist(row):
+        cur=evtdb.cursor()
+        try:
+            cur.execute('select count(*)>0 from follow%d'%row[0])
+        except sqlite3.OperationalError:
+            return False
+        else:
+            return cur.fetchone()[0]
+
+    with sqlite3.connect('events.db') as mstdb, sqlite3.connect('db/%d.db'%eventid) as evtdb:
+        cur=mstdb.cursor()
         cur.execute('select title,begin,`end`,last_update,score_parser from events where id=?',[eventid])
         res=cur.fetchone()
         assert res, '活动信息不存在'
 
         cur.execute('select ind,name from follows')
         g.eventid=eventid
-        g.follows=cur.fetchall()
+        g.follows=list(filter(does_follower_exist,cur.fetchall()))
 
     g.title=res[0]
     g.begin=res[1]
@@ -156,7 +164,9 @@ def event_index(eventid):
         cur=db.cursor()
         for ind,name in g.follows:
             cur.execute('select score,rank from follow%d order by time desc limit 0,1'%ind)
-            res=cur.fetchone() or [-1,999999]
+            res=cur.fetchone()
+            if not res:
+                continue
             scores.append({
                 'score': res[0],
                 'name': name,
@@ -182,12 +192,13 @@ def event_index(eventid):
         cur.execute('select t1cur,t1pre,t2cur,t2pre,t3cur,t3pre from line order by time desc limit 0,1')
         t1cur, t1pre, t2cur, t2pre, t3cur, t3pre=cur.fetchone() or [-1,-1,-1,-1,-1,-1]
         for name,cur,pre in [(2300,t1cur,t1pre),(11500,t2cur,t2pre),(23000,t3cur,t3pre)]:
-            scores.append({
-                'score': cur,
-                'name': '#%d'%name,
-                'special': True,
-                'desc': '实际 / 预测 %d pt / 拟合 %d pt'%(pre,int(pre*(g.time-g.begin)/(g.end-g.begin))),
-            })
+            if cur or pre:
+                scores.append({
+                    'score': cur,
+                    'name': '#%d'%name,
+                    'special': True,
+                    'desc': '实际 / 预测 %d pt / 拟合 %d pt'%(pre,int(pre*(g.time-g.begin)/(g.end-g.begin))),
+                })
 
     return render_template('event_index.html',scores=scores,last_action=last_action)
 

@@ -30,7 +30,7 @@
             function array_max(x) {
                 var val=0;
                 for(var i=1;i<x.length;i++)
-                    if(x[i]>val)
+                    if(x[i]>val && x[i]<100000)
                         val=x[i];
                 return val;
             }
@@ -66,9 +66,9 @@
                         areaStyle: {normal: {color: '#ffeeee'}},
                         data: data['rank']
                     },
-                    {name: '一档', type: 'scatter', data: [null], markLine: make_line(2300)},
-                    {name: '二档', type: 'scatter', data: [null], markLine: make_line(11500)},
-                    {name: '三档', type: 'scatter', data: [null], markLine: make_line(23000)}
+                    {name: '一档', type: 'scatter', symbolSize: 0, data: [0], markLine: make_line(2300)},
+                    {name: '二档', type: 'scatter', symbolSize: 0, data: [0], markLine: make_line(11500)},
+                    {name: '三档', type: 'scatter', symbolSize: 0, data: [0], markLine: make_line(23000)}
                 ]
             });
         });
