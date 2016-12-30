@@ -37,6 +37,7 @@ def _fetch_user_rank(ind,uid,eventid):
         res=s.get(
             'https://siflive.umisonoda.com/ranking.php',
             params={
+                'pos':'',
                 'userId':uid,
                 'event_id':eventid,
             },
