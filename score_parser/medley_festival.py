@@ -37,7 +37,7 @@ for mod,mk in mods.items():
             for combo,ck in combos.items():
                 for score,sk in scores.items():
                     pt=int(.5+base_score*ck*sk*mk)
-                    table.setdefault(pt,[]).append('%s*%d score%s combo%s%s'%(mode,repeats+1,score,combo,mod))
+                    table.setdefault(pt,[]).append('%s*%d %s:%s%s'%(mode,repeats+1,score,combo,mod))
 
 def parse_score(x):
     if x in table:

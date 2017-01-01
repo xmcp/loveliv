@@ -41,27 +41,27 @@ scores='SSABSABCSABC'
 combos='SABC-'
 for r, row in enumerate(table):
     for c, col in enumerate(row):
-        evt_scores.setdefault(col,[]).append('%s Score%s Combo%s'%(modes[r],scores[r],combos[c]))
-        evt_scores.setdefault(col*4,[]).append('4x %s Score%s Combo%s'%(modes[r],scores[r],combos[c]))
+        evt_scores.setdefault(col,[]).append('%s %s:%s'%(modes[r],scores[r],combos[c]))
+        evt_scores.setdefault(col*4,[]).append('4x %s %s:%s'%(modes[r],scores[r],combos[c]))
 
 def parse_score(x):
     if x<=0:
         return
     elif x<5:
-        return '非活动 Ez 损失 %d 图标'%(5-x)
+        return '非活动 Ez -%d'%(5-x)
     elif x==5:
         return '非活动 Ez'
     elif x<10:
-        return '非活动 Nm 损失 %d 图标'%(10-x)
+        return '非活动 Nm -%d'%(10-x)
     elif x==10:
         return '非活动 Nm'
     elif x<16:
-        return '非活动 Hd 损失 %d 图标'%(16-x)
+        return '非活动 Hd -%d'%(16-x)
     elif x==16:
         return '非活动 Hd'
     elif x<27:
-        return '非活动 Ex 损失 %d 图标'%(27-x)
+        return '非活动 EX -%d'%(27-x)
     elif x==27:
-        return '非活动 Ex'
+        return '非活动 EX'
     elif x in evt_scores:
-        return ' 或 '.join(evt_scores[x])
+        return ' / '.join(evt_scores[x])

@@ -20,6 +20,7 @@
         }
         a {
             color: black;
+            font-weight: bold;
         }
         .errlog span {
             color: red;
@@ -28,12 +29,12 @@
 </head>
 <body>
     <p>
-        <b><a href="{{ url_for('event_index',eventid=g.eventid) }}">{{ g.title }}</a></b> /
-        {% if timeleft.total_seconds()>0 %}
+        <a href="{{ url_for('event_index',eventid=g.eventid) }}">{{ g.title }}</a> /
+        {%- if timeleft.total_seconds()>0 -%}
             还剩 {{ timeleft.days }} 天 {{ timeleft.seconds//3600 }} 小时
-        {% else %}
+        {%- else -%}
             已经结束
-        {% endif %}
+        {%- endif -%}
     </p>
     <hr>
     <p><b>一档</b> / <kbd>{{ line.t1c }} pt</kbd> / <kbd>预测 {{ line.t1p }} pt</kbd></p>
@@ -41,22 +42,25 @@
     <p><b>三档</b> / <kbd>{{ line.t3c }} pt</kbd> / <kbd>预测 {{ line.t3p }} pt</kbd></p>
 
     <hr>
-    {% for ind,follow in follows|dictsort %}
+    {%- for ind,follow in follows|dictsort -%}
         <p>
-            <b><a href="{{ url_for('follower_details',eventid=g.eventid,ind=ind) }}">{{ follow.name }}</a></b> /
+            <a href="{{ url_for('follower_details',eventid=g.eventid,ind=ind) }}">{{ follow.name }}</a> /
             <kbd>{{ follow.score }} pt</kbd> /
             <kbd>#{{ follow.rank if follow.rank!=999999 else 'INF' }}</kbd>
         </p>
-    {% endfor %}
+    {%- endfor -%}
 
     <hr>
     <p>
         <kbd>{{ line.time | strftime }}</kbd> 更新 /
-        <a href="{{ url_for('event_list') }}"><b>返回主页</b></a>
+        <a href="{{ url_for('event_list') }}">返回主页</a>
     </p>
-    {% for time,content in err_logs %}
-        <p class="errlog"><kbd>{{ time | strftime }}</kbd> / <span>{{ content }}</span></p>
-    {% endfor %}
+    {%- for time,content in err_logs -%}
+        <p class="errlog">
+            <kbd>{{ time | strftime }}</kbd> /
+            <span>{{ content | truncate(40,killwords=True,end=' …') }}</span>
+        </p>
+    {%- endfor -%}
 
 </body>
 </html>

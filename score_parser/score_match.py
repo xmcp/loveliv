@@ -28,7 +28,7 @@ scores='SABC'*4
 nums='1234'
 for r, row in enumerate(table):
     for c, col in enumerate(row):
-        evt_scores.setdefault(col,[]).append('%s Score%s 第%s名' % (modes[r],scores[r],nums[c]))
+        evt_scores.setdefault(col,[]).append('%s %s #%s' % (modes[r],scores[r],nums[c]))
 
 def parse_score(x):
     if x==12:
@@ -40,4 +40,4 @@ def parse_score(x):
     elif x==91:
         return 'EX 失败'
     elif x in evt_scores:
-        return ' 或 '.join(evt_scores[x])
+        return ' / '.join(evt_scores[x])
