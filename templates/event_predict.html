@@ -45,7 +45,7 @@
                     trigger: 'axis'
                 },
                 legend: {
-                    data : ['一档·实际','二档·实际','三档·实际','一档·拟合','二档·拟合','三档·拟合']
+                    data : ['一档','二档','三档']
                 },
                 xAxis: {
                     type: 'category',
@@ -61,9 +61,6 @@
                     {name:'一档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'solid'}},data: data['l1c']},
                     {name:'二档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'solid'}},data: data['l2c']},
                     {name:'三档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'solid'}},data: data['l3c']},
-                    {name:'一档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'dotted'}},data: data['l1r']},
-                    {name:'二档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'dotted'}},data: data['l2r']},
-                    {name:'三档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type:'dotted'}},data: data['l3r']}
                 ]
             };
             line_chart.hideLoading();

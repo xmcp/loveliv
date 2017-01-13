@@ -11,6 +11,7 @@ parser=argparse.ArgumentParser()
 parser.add_argument('-e',nargs='?',dest='EVENT_ID',help='Specify event id')
 parser.add_argument('-b',nargs='*',dest='BUGGY_USERS',help='User INDs that will skip errors when fetching')
 parser.add_argument('-c',dest='CRAWL_HTML',action='store_true',help='Crawl HTML-Formatted line data instead of JSON API')
+parser.add_argument('-f',dest='FUCK_LINE',action='store_true',help='DO NOT fetch the line anymore')
 args=parser.parse_args()
 assert not args.CRAWL_HTML or args.EVENT_ID is not None, 'EVENT_ID is needed with CRAWL_HTML flag'
 
@@ -92,6 +93,10 @@ def _fetch_user_rank(ind,uid,eventid):
             }
 
 def _fetch_line():
+    if args.FUCK_LINE:
+        wtf={'predict':0,'current':0}
+        return evt_info_bkp, {'2300': wtf, '11500': wtf, '23000': wtf}
+
     if args.CRAWL_HTML:
         evt_info=evt_info_bkp
         res=s.get('http://2300.ml/',timeout=TIMEOUT)
@@ -259,7 +264,7 @@ def mainloop():
                     push('[SYSTEM]\n这破网好像缓过来了')
                 err_level=0
             elif last_errlevel==err_level: #no error this turn
-                err_level-=2
+                err_level-=4
             
             bug=None
             with sqlite3.connect('events.db') as db:
