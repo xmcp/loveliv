@@ -273,9 +273,6 @@ def api_predict(eventid):
         l1p=[int(x[1]) for x in lines],
         l2p=[int(x[3]) for x in lines],
         l3p=[int(x[5]) for x in lines],
-        l1r=[int(x[1]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
-        l2r=[int(x[3]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
-        l3r=[int(x[5]*(x[0]-g.begin)/(g.end-g.begin)) for x in lines],
     )
 
 @app.route('/<int:eventid>/follow<int:ind>/api_stats.json')
