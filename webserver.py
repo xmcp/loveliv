@@ -285,18 +285,20 @@ def api_follower_stats(eventid,ind):
         cur.execute('select min(time),score from follow%d group by score'%ind)
         res=cur.fetchall()
         for ind in range(len(res)):
-            hour=to_datetime(res[ind][0]).hour
+            tim=to_datetime(res[ind][0])
             score=res[ind][1]-res[ind-1][1] if ind>0 else None
-            times.setdefault(hour,0)
-            times[hour]+=1
+            times.setdefault((tim.date(),tim.hour),0)
+            times[tim.date(),tim.hour]+=1
             if score is not None:
                 scores.setdefault(score,0)
                 scores[score]+=1
 
     ks=list(sorted(scores.keys()))
     return jsonify(
-        times=list(times.items()),
-        scores_keys=['%d pt'%k for k in ks],
+        times=list([[h,d.strftime('%d'),v] for (d,h),v in times.items()]),
+        max_times=max(times.values()),
+        days=[d.strftime('%d') for d in sorted(set([d for d,_ in times.keys()]),reverse=True)],
+        scores_keys=ks,
         scores_values=[scores[k] for k in ks],
     )
 

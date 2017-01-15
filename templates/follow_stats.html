@@ -7,7 +7,7 @@
         }
     </style>
 
-    <div id="time-chart" class="chart" style="height: 75px"></div>
+    <div id="time-chart" class="chart" style="height: 400px"></div>
     <div id="score-chart" class="chart" style="height: 450px"></div>
     <script>
         var time_chart=echarts.init(document.getElementById('time-chart')),
@@ -15,37 +15,48 @@
             USERNAME=decodeURIComponent("{{ g.fname | urlencode }}");
         time_chart.showLoading();
         score_chart.showLoading();
+        $(window).on('resize',function() {time_chart.resize(); score_chart.resize();});
         $.get('{{ url_for('api_follower_stats',eventid=g.eventid,ind=g.follower_ind) }}').done(function(data) {
             time_chart.hideLoading();
             time_chart.setOption({
                 title: [{
                     textBaseline: 'middle',
-                    text: '得分时间',
+                    text: '游戏时间',
                     top: 25
                 }],
-                tooltip: {
-                    position: 'top'
+                grid: {
+                    right: 60
                 },
-                singleAxis: [{
-                    left: 150,
-                    height: 50,
-                    top: '5%',
-                    type: 'value',
+                visualMap: {
                     min: 0,
-                    max: 23,
-                    interval: 1
-                }],
+                    max: data['max_times'],
+                    calculable: true,
+                    top: 'middle',
+                    right: 0
+                },
+                xAxis: {
+                    type: 'category',
+                    data: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
+                    splitArea: {show: true}
+                },
+                yAxis: {
+                    type: 'category',
+                    data: data['days'],
+                    splitArea: {show: true}
+                },
                 series: [{
-                    coordinateSystem: 'singleAxis',
-                    type: 'scatter',
-                    data: data['times'],
-                    symbolSize: function (item) {
-                        return item[1]*2;
-                    }
+                    type: 'heatmap',
+                    label: {normal: {show: true}},
+                    data: data['times']
                 }]
             });
             score_chart.hideLoading();
             score_chart.setOption({
+                title: [{
+                    textBaseline: 'middle',
+                    text: '获得pt',
+                    top: 25
+                }],
                 tooltip: {},
                 yAxis: {
                     data: data['scores_keys'],
