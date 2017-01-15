@@ -17,7 +17,7 @@
             predict_chart=echarts.init(document.getElementById('predict-chart'));
         line_chart.showLoading();
         predict_chart.showLoading();
-
+        $(window).on('resize',function() {line_chart.resize(); predict_chart.resize();});
         $.get('{{ url_for('api_predict',eventid=g.eventid) }}').done(function(data) {
             function get_player_score(url,name) {
                 $.get(url).done(function(data) {

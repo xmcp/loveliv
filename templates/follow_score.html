@@ -18,7 +18,7 @@
             USERNAME=decodeURIComponent("{{ g.fname | urlencode }}");
         line_chart.showLoading();
         predict_chart.showLoading();
-
+        $(window).on('resize',function() {line_chart.resize(); predict_chart.resize();});
         $.when(
             $.get('{{ url_for('api_predict',eventid=g.eventid) }}'),
             $.get('{{ url_for('api_follower_score',eventid=g.eventid,ind=g.follower_ind) }}')

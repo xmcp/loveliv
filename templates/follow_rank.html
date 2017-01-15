@@ -12,6 +12,7 @@
     <script>
         var rank_chart=echarts.init(document.getElementById('rank-chart')),
             USERNAME=decodeURIComponent("{{ g.fname | urlencode }}");
+        $(window).on('resize',rank_chart.resize);
         $.get('{{ url_for('api_follower_rank',eventid=g.eventid,ind=g.follower_ind) }}').done(function(data) {
             function make_line(x) {
                 return {
