@@ -58,18 +58,21 @@
                     {type: 'slider',start: 0,end: 100, xAxisIndex:0},
                     {type: 'slider',start: 0,end: 100, yAxisIndex:0}
                 ],
-                series: [
-                    {
-                        name: USERNAME, type: 'line',
-                        itemStyle: {normal: {opacity: 0}},
-                        lineStyle: {normal: {type: 'solid'}},
-                        areaStyle: {normal: {color: '#ffeeee'}},
-                        data: data['rank']
-                    },
-                    {name: '一档', type: 'scatter', symbolSize: 0, data: [0], markLine: make_line(2300)},
-                    {name: '二档', type: 'scatter', symbolSize: 0, data: [0], markLine: make_line(11500)},
-                    {name: '三档', type: 'scatter', symbolSize: 0, data: [0], markLine: make_line(23000)}
-                ]
+                series: [{
+                    name: USERNAME, type: 'line',
+                    itemStyle: {normal: {opacity: 0}},
+                    lineStyle: {normal: {type: 'solid'}},
+                    areaStyle: {normal: {color: '#ffeeee'}},
+                    data: data['rank'],
+                    markLine: {
+                        symbolSize: 0,
+                        data: [
+                            {yAxis: 2300},
+                            {yAxis: 11500},
+                            {yAxis: 23000}
+                        ]
+                    }
+                }]
             });
         });
     </script>

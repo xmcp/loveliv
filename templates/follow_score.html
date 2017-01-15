@@ -33,7 +33,7 @@
                     trigger: 'axis'
                 },
                 legend: {
-                    data : ['一档·实际','二档·实际','三档·实际','一档·拟合','二档·拟合','三档·拟合',USERNAME]
+                    data : ['一档','二档','三档',USERNAME]
                 },
                 xAxis: {
                     type: 'category',
@@ -45,12 +45,9 @@
                     {type: 'slider',start: 0,end: 100, yAxisIndex:0}
                 ],
                 series: [ //fixme: bug when player's time is difference with line's time
-                    {name:'一档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l1c']},
-                    {name:'二档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l2c']},
-                    {name:'三档·实际',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l3c']},
-                    {name:'一档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'dotted'}},data: line_data['l1r']},
-                    {name:'二档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'dotted'}},data: line_data['l2r']},
-                    {name:'三档·拟合',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'dotted'}},data: line_data['l3r']},
+                    {name:'一档',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l1c']},
+                    {name:'二档',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l2c']},
+                    {name:'三档',type:'line',itemStyle:{normal:{opacity:0}},lineStyle:{normal:{type: 'solid'}},data: line_data['l3c']},
                     {
                         name: USERNAME, type: 'line', data: score_data['real'],
                         itemStyle: {normal: {opacity: 0}},
@@ -62,7 +59,7 @@
             predict_chart.hideLoading();
             predict_chart.setOption({
                 title: {
-                    text: '拟合分数'
+                    text: '预测分数'
                 },
                 tooltip: {
                     trigger: 'axis'

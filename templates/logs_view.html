@@ -1,5 +1,8 @@
 {% macro logs_style() %}
     <style>
+        .log-item {
+            word-break: break-all;
+        }
         .logs-channel-info {
             color: #337ab7;
         }
@@ -23,7 +26,7 @@
 {% macro show_logs(logs,more=False) %}
     <ul class="list-group">
         {% for time,channel,content in logs %}
-            <li class="list-group-item">
+            <li class="list-group-item log-item">
                 <span class="timestamp">{{ time | strftime }}</span>
                 <b class="logs-channel logs-channel-{{ channel }} consolas">{{ channel }}</b>
                 {{ content }}

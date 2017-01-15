@@ -171,7 +171,7 @@ def event_index(eventid):
                 'score': res[0],
                 'name': name,
                 'special': False,
-                'desc': '#%d / 预测 %d pt'%(res[1],res[0]/(g.time-g.begin)*(g.end-g.begin)),
+                'desc': '#%s / 预测 %d pt'%('INF' if res[1]==999999 else res[1],res[0]/(g.time-g.begin)*(g.end-g.begin)),
             })
             cur.execute('select score,min(time) from follow%d group by score order by score desc limit 0,2'%ind)
             res=cur.fetchmany(2)
