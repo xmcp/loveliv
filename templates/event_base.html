@@ -32,17 +32,17 @@
         <ul class="nav navbar-nav">
             <li {{ 'class="active"'|safe if request.path.endswith('/index') }}>
                 <a href="{{ url_for('event_index',eventid=g.eventid) }}">
-                    <span class="glyphicon glyphicon-home"></span> {{ g.title }}
+                    <span class="glyphicon glyphicon-home hidden-sm"></span> {{ g.title }}
                 </a>
             </li>
             <li {{ 'class="active"'|safe if request.path.endswith('/predict') }}>
                 <a href="{{ url_for('event_predict',eventid=g.eventid) }}">
-                    <span class="glyphicon glyphicon-stats"></span> 档线</a>
+                    <span class="glyphicon glyphicon-stats"></span><span class="hidden-sm"> 档线</span></a>
             </li>
             {% for ind,name in g.follows %}
                 <li {{ 'class="active"'|safe if '/follow%d/'%ind in request.path }}>
                     <a href="{{ url_for('event_follow',eventid=g.eventid,ind=ind) }}">
-                        <span class="glyphicon glyphicon-user"></span> {{ name }}</a>
+                        <span class="glyphicon glyphicon-user hidden-sm"></span> {{ name }}</a>
                 </li>
             {% endfor %}
         </ul>

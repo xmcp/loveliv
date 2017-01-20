@@ -277,6 +277,12 @@ def api_predict(eventid):
 
 @app.route('/<int:eventid>/follow<int:ind>/api_stats.json')
 def api_follower_stats(eventid,ind):
+    def kuro_shift(d: datetime.datetime):
+        if d.hour<3:
+            return (d-datetime.timedelta(days=1)).date(), d.hour+24-3
+        else:
+            return d.date(),d.hour-3
+
     db=getevent(eventid)
     times={}
     scores={}
@@ -287,8 +293,9 @@ def api_follower_stats(eventid,ind):
         for ind in range(len(res)):
             tim=to_datetime(res[ind][0])
             score=res[ind][1]-res[ind-1][1] if ind>0 else None
-            times.setdefault((tim.date(),tim.hour),0)
-            times[tim.date(),tim.hour]+=1
+            key=kuro_shift(tim)
+            times.setdefault(key,0)
+            times[key]+=1
             if score is not None:
                 scores.setdefault(score,0)
                 scores[score]+=1
