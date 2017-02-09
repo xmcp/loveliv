@@ -8,7 +8,10 @@
     </style>
 
     <div class="well well-lg" style="font-size: 1.2em">
-        <b>{{ g.fname }}</b> (ID: {{ g.fid }}, lv{{ g.flevel }}) /
+        <b>{{ g.fname }}</b>
+        ( ID:
+        <a target="_blank" href="https://sifcn.loveliv.es/user/{{ g.fid }}">{{ g.fid }} <span class="glyphicon glyphicon-new-window"></span></a>
+        , Lv.{{ g.flevel }} ) /
         <kbd>{{ g.fscore }}pt</kbd> / <kbd>#{{ g.frank }}</kbd>
         / 更新于 {{ timestamp(g.ftime) }}
     </div>

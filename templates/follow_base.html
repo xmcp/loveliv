@@ -9,9 +9,6 @@
         <li {{ 'class="active"'|safe if request.path.endswith('/stats') }}><a href="stats">得分统计</a></li>
         <li {{ 'class="active"'|safe if request.path.endswith('/score') }}><a href="score">分数图像</a></li>
         <li {{ 'class="active"'|safe if request.path.endswith('/rank') }}><a href="rank">排名图像</a></li>
-        <li><a href="https://sifcn.loveliv.es/user/{{ g.fid }}" target="_blank">
-            <span class="glyphicon glyphicon-new-window"></span> SIFCN
-        </a></li>
     </ul>
 
     <br>

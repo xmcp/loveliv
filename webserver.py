@@ -4,7 +4,7 @@ from flask_compress import Compress
 import os
 import sqlite3
 import datetime
-from utils import parse_score_meta
+from utils import parse_score_meta, stat_score_meta
 
 app=Flask(__name__)
 app.config['COMPRESS_LEVEL']=9
@@ -282,8 +282,9 @@ def api_follower_stats(eventid,ind):
             return (d-datetime.timedelta(days=1)).date(), d.hour+24-3
         else:
             return d.date(),d.hour-3
-
+            
     db=getevent(eventid)
+    statgazer=stat_score_meta(eventid)
     times={}
     scores={}
     with db:
@@ -294,16 +295,18 @@ def api_follower_stats(eventid,ind):
             tim=to_datetime(res[ind][0])
             score=res[ind][1]-res[ind-1][1] if ind>0 else None
             key=kuro_shift(tim)
-            times.setdefault(key,0)
-            times[key]+=1
+            times.setdefault(key,(0,0,0,0))
             if score is not None:
                 scores.setdefault(score,0)
-                scores[score]+=1
+                scores[score]+=1                
+                score_tuple=statgazer(score)
+                times[key]=tuple(times[key][i]+score_tuple[i] for i in range(4))
 
     ks=list(sorted(scores.keys()))
     return jsonify(
-        times=list([[h,d.strftime('%d'),v] for (d,h),v in times.items()]),
-        max_times=max(times.values()),
+        times=[[(h,d.strftime('%d'),v[i]) for (d,h),v in times.items()] for i in range(4)],
+        maxes=[max((x[i] for x in times.values())) for i in range(4)],
+        mines=[min((x[i] for x in times.values())) for i in range(4)],
         days=[d.strftime('%d') for d in sorted(set([d for d,_ in times.keys()]),reverse=True)],
         scores_keys=ks,
         scores_values=[scores[k] for k in ks],

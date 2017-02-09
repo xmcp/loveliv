@@ -12,11 +12,28 @@
     <script>
         var time_chart=echarts.init(document.getElementById('time-chart')),
             score_chart=echarts.init(document.getElementById('score-chart')),
-            USERNAME=decodeURIComponent("{{ g.fname | urlencode }}");
+            USERNAME=decodeURIComponent("{{ g.fname | urlencode }}"),
+            data=null;
+        
+        function setdimension_factory(ind) {
+            return function() {
+                time_chart.setOption({
+                    visualMap: {
+                        max: data['maxes'][ind],
+                        min: data['mines'][ind]
+                    },
+                    series: {
+                        data: data['times'][ind]
+                    }
+                });
+            }
+        }
+            
         time_chart.showLoading();
         score_chart.showLoading();
         $(window).on('resize',function() {time_chart.resize(); score_chart.resize();});
         $.get('{{ url_for('api_follower_stats',eventid=g.eventid,ind=g.follower_ind) }}').done(function(data) {
+            window.data=data;
             time_chart.hideLoading();
             time_chart.setOption({
                 title: [{
@@ -28,11 +45,46 @@
                     right: 60
                 },
                 visualMap: {
-                    min: 0,
-                    max: data['max_times'],
+                    // dimension: 2, // these 3 values are updated in setdimension
+                    // min: 0,
+                    // max: data['maxval'][0],
+                    textStyle: {
+                        fontSize: 10
+                    },
                     calculable: true,
                     top: 'middle',
                     right: 0
+                },
+                toolbox: {
+                    top: 15,
+                    right: 30,
+                    itemSize: 20,
+                    feature: {
+                        mySelLive: {
+                            show: true,
+                            title: '活动pt',
+                            icon: 'image:///static/icon/label_pt.svg',
+                            onclick: setdimension_factory(0),
+                        },
+                        mySelSong: {
+                            show: true,
+                            title: '歌曲数',
+                            icon: 'image:///static/icon/label_song.svg',
+                            onclick: setdimension_factory(1),
+                        },
+                        mySelLp: {
+                            show: true,
+                            title: 'LP',
+                            icon: 'image:///static/icon/label_lp.svg',
+                            onclick: setdimension_factory(2),
+                        },
+                        mySelItem: {
+                            show: true,
+                            title: '传统活动道具',
+                            icon: 'image:///static/icon/label_items.svg',
+                            onclick: setdimension_factory(3),
+                        }
+                    }
                 },
                 xAxis: {
                     type: 'category',
@@ -44,12 +96,13 @@
                     data: data['days'],
                     splitArea: {show: true}
                 },
-                series: [{
+                series: {
                     type: 'heatmap',
-                    label: {normal: {show: true}},
-                    data: data['times']
-                }]
+                    label: {normal: {show: true}}
+                    // data is updated in setdimension
+                }
             });
+            setdimension_factory(1)(); // songs
             score_chart.hideLoading();
             score_chart.setOption({
                 title: [{

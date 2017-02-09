@@ -22,13 +22,23 @@ table=[
     [374, 344, 314, 299],
     [357, 328, 300, 286],
 ]
+
+lps={
+    'Ez': 5,
+    'Nm': 10,
+    'Hd': 15,
+    'EX': 25,
+}
+
 evt_scores={}
+evt_tuples={}
 modes=['Ez']*4+['Nm']*4+['Hd']*4+['EX']*4
 scores='SABC'*4
 nums='1234'
 for r, row in enumerate(table):
     for c, col in enumerate(row):
         evt_scores.setdefault(col,[]).append('%s %s #%s' % (modes[r],scores[r],nums[c]))
+        evt_tuples[col]=(col,1,lps[modes[r]],0)
 
 def parse_score(x):
     if x==12:
@@ -41,3 +51,6 @@ def parse_score(x):
         return 'EX 失败'
     elif x in evt_scores:
         return ' / '.join(evt_scores[x])
+        
+def parse_tuple(x):
+    return evt_tuples.get(x,(x,0,0,0))

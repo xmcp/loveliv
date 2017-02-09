@@ -61,14 +61,19 @@ def init_master():
         )''')
 
 @functools.lru_cache()
-def parse_score_meta(eventid):
+def _get_score_parser(eventid):
     with sqlite3.connect('events.db') as db:
         cur=db.cursor()
         cur.execute('select score_parser from events where id=?',[eventid])
         res=cur.fetchone()
     if res and res[0]:
+        return res[0] # name of the parser
+
+def parse_score_meta(eventid):
+    _parser=_get_score_parser(eventid)
+    if _parser:
         def wrapper(x,format_str='%s'):
-            orig_res=score_parser.parsers[res[0]](x)
+            orig_res=score_parser.parsers[_parser](x)
             if orig_res:
                 return format_str%orig_res
             else:
@@ -76,3 +81,10 @@ def parse_score_meta(eventid):
         return wrapper
     else:
         return lambda x,y=None:''
+        
+def stat_score_meta(eventid):
+    _parser=_get_score_parser(eventid)
+    if _parser:
+        return score_parser.statgazers[_parser]
+    else:
+        return lambda x:(x,0,0,0)
