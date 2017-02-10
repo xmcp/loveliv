@@ -63,25 +63,25 @@
                         mySelLive: {
                             show: true,
                             title: '活动pt',
-                            icon: 'image:///static/icon/label_pt.svg',
+                            icon: 'image:///static/icon/label_pt.png',
                             onclick: setdimension_factory(0),
                         },
                         mySelSong: {
                             show: true,
                             title: '歌曲数',
-                            icon: 'image:///static/icon/label_song.svg',
+                            icon: 'image:///static/icon/label_song.png',
                             onclick: setdimension_factory(1),
                         },
                         mySelLp: {
                             show: true,
                             title: 'LP',
-                            icon: 'image:///static/icon/label_lp.svg',
+                            icon: 'image:///static/icon/label_lp.png',
                             onclick: setdimension_factory(2),
                         },
                         mySelItem: {
                             show: true,
                             title: '传统活动道具',
-                            icon: 'image:///static/icon/label_items.svg',
+                            icon: 'image:///static/icon/label_items.png',
                             onclick: setdimension_factory(3),
                         }
                     }
@@ -111,6 +111,40 @@
                     top: 25
                 }],
                 tooltip: {},
+                toolbox: {
+                    top: 15,
+                    right: 30,
+                    itemSize: 20,
+                    feature: {
+                        myLinear: {
+                            show: true,
+                            title: '线性坐标',
+                            icon: 'image:///static/icon/label_linear.png',
+                            onclick: function() {
+                                score_chart.setOption({
+                                    xAxis: {
+                                        type: 'value',
+                                        min: 0
+                                    }
+                                });
+                            },
+                        },
+                        myLog: {
+                            show: true,
+                            title: '对数坐标',
+                            icon: 'image:///static/icon/label_log.png',
+                            onclick: function() {
+                                score_chart.setOption({
+                                    xAxis: {
+                                        type: 'log',
+                                        logBase: 2,
+                                        min: .5
+                                    }
+                                });
+                            },
+                        },
+                    }
+                },
                 yAxis: {
                     data: data['scores_keys'],
                     axisLabel: {
